@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>webJose (webJose@gmail.com)</Authors>
+    <Company />
+    <Description>Class library that compares the values of properties from different objects in order to evaluate equality.</Description>
+    <PackageProjectUrl>https://github.com/webJose/wj.ObjectComparer</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/webJose/wj.ObjectComparer/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/webJose/wj.ObjectComparer</RepositoryUrl>
+    <PackageTags>compare comparer objectcomparer property comparison</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+</Project>
