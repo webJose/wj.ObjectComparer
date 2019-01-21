@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace wj.ObjectComparer
 {
@@ -139,12 +136,12 @@ namespace wj.ObjectComparer
             else if (Result != ComparisonResult.Undefined && Result != ComparisonResult.StringCoercion)
             {
                 char op = default(char);
-                switch (Result & ~ ComparisonResult.StringCoercion)
+                switch (Result & ~ComparisonResult.StringCoercion)
                 {
-                        case ComparisonResult.Equal:
+                    case ComparisonResult.Equal:
                         op = '=';
                         break;
-                        case ComparisonResult.GreaterThan:
+                    case ComparisonResult.GreaterThan:
                         op = '>';
                         break;
                     default:

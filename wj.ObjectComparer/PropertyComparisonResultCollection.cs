@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Web;
-
-namespace wj.ObjectComparer
+﻿namespace wj.ObjectComparer
 {
     /// <summary>
     /// Collection of <see cref="PropertyComparisonResult"/> objects product of a comparison 
     /// operation between two objects.
     /// </summary>
-    public class PropertyComparisonResultKeyedCollection : DictionaryCollection<string, PropertyComparisonResult>
+    public class PropertyComparisonResultCollection : DictionaryCollection<string, PropertyComparisonResult>
     {
         #region Methods
         /// <inheritdoc />

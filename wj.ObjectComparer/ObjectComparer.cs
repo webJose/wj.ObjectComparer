@@ -1,18 +1,44 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace wj.ObjectComparer
 {
     /// <summary>
     /// Object used to compare two objects in a property-by-property basis.
     /// </summary>
-    /// <typeparam name="T1">The data type of the first object.</typeparam>
-    /// <typeparam name="T2">The data type of the second object.</typeparam>
-    public class ObjectComparer<T1, T2>
+    public class ObjectComparer
     {
+        #region Static Section
+        /// <summary>
+        /// Creates a new <see cref="ObjectComparer"/> object capable of comparing objects of the 
+        /// same type.
+        /// </summary>
+        /// <typeparam name="T">The type of object to compare.  This type must have been 
+        /// previously registered with this class library's type scanner.</typeparam>
+        /// <param name="comparers">A collection of comparers to be used during property 
+        /// comparison execution.</param>
+        /// <returns>A newly created <see cref="ObjectComparer"/> object.</returns>
+        public static ObjectComparer Create<T>(IDictionary<Type, IComparer> comparers = null)
+        {
+            return new ObjectComparer(typeof(T), typeof(T), comparers);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ObjectComparer"/> object capable of comparing objects of 
+        /// different types.
+        /// </summary>
+        /// <typeparam name="T1">The data type of the first object.</typeparam>
+        /// <typeparam name="T2">The data type of the second object.</typeparam>
+        /// <param name="comparers">A collection of comparers to be used during property 
+        /// comparison execution.</param>
+        /// <returns>A newly created <see cref="ObjectComparer"/> object.</returns>
+        public static ObjectComparer Create<T1, T2>(IDictionary<Type, IComparer> comparers = null)
+        {
+            return new ObjectComparer(typeof(T1), typeof(T2), comparers);
+        }
+        #endregion
+
         #region Private Data
         /// <summary>
         /// Type information about the data type of the first object.
@@ -29,12 +55,12 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Gets The data type of the first object.
         /// </summary>
-        public Type Type1 { get; } = typeof(T1);
+        public Type Type1 { get; }
 
         /// <summary>
         /// Gets the data type of the second object.
         /// </summary>
-        public Type Type2 { get; } = typeof(T2);
+        public Type Type2 { get; }
 
         /// <summary>
         /// Gets a collection of comparers to be used for a specific data type.
@@ -44,14 +70,17 @@ namespace wj.ObjectComparer
 
         #region Constructors
         /// <summary>
-        /// Creates a new instance of this class, using the optionally-provided comparers to 
+        /// Creates a new instance of this class, using the optionally provided comparers to 
         /// perform property value comparison.
         /// </summary>
-        /// <param name="comparers">A collection of comparers to be used during comparison 
-        /// execution.</param>
-        public ObjectComparer(IDictionary<Type, IComparer> comparers = null)
+        /// <param name="comparers">A collection of comparers to be used during property 
+        /// comparison execution.</param>
+        /// <exception cref="NoTypeInformationException">Thrown if the type of either object was 
+        /// not registered with the scanner engine.</exception>
+        public ObjectComparer(Type type1, Type type2, IDictionary<Type, IComparer> comparers = null)
         {
-            Comparers = new Dictionary<Type, IComparer>();
+            Type1 = type1;
+            Type2 = type2;
             if (comparers != null)
             {
                 foreach (KeyValuePair<Type, IComparer> comparerPair in comparers)
@@ -71,7 +100,7 @@ namespace wj.ObjectComparer
         /// <param name="type">The type of interest.</param>
         /// <param name="ci">The destination container for the type information object.</param>
         /// <exception cref="NoTypeInformationException">Thrown if the type was not registered 
-        /// in the scanner engine.</exception>
+        /// with the scanner engine.</exception>
         private void SetScannedTypeInfo(Type type, ref TypeInfo ci)
         {
             try
@@ -125,8 +154,13 @@ namespace wj.ObjectComparer
         /// how the values of two properties in two different objects compare to one another.  If 
         /// a collection was provided in the <paramref name="results"/> parameter, the returned 
         /// collection is the collection that was provided through the aforementioned parameter.</returns>
-        public IDictionary<string, PropertyComparisonResult> Compare(T1 object1, T2 object2,
-            IDictionary<string, PropertyComparisonResult> results = null) => 
+        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
+        /// data type.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
+        /// object.</exception>
+        public IDictionary<string, PropertyComparisonResult> Compare(object object1, object object2,
+            IDictionary<string, PropertyComparisonResult> results = null) =>
             Compare(object1, object2, out var _, results);
 
         /// <summary>
@@ -138,7 +172,12 @@ namespace wj.ObjectComparer
         /// <param name="object2">The second object of the comparison operation.</param>
         /// <returns>A Boolean value with the summarized result of the comparison.  True if any 
         /// property values were deemed different; false if all property values turned out equal.</returns>
-        public bool Compare(T1 object1, T2 object2)
+        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
+        /// data type.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
+        /// object.</exception>
+        public bool Compare(object object1, object object2)
         {
             Compare(object1, object2, out bool isDifferent);
             return isDifferent;
@@ -151,16 +190,37 @@ namespace wj.ObjectComparer
         /// </summary>
         /// <param name="object1">The first object to be compared against a second object.</param>
         /// <param name="object2">The second object of the comparison operation.</param>
-        /// <param name="isDifferent"></param>
+        /// <param name="isDifferent">A Boolean out parameter that contains an overall result of 
+        /// the comparison:  It will be true if there is any difference in any of the property 
+        /// values; false if all property values turn out to be equal.</param>
         /// <param name="results">If provided, it will be used to collec the comparison results.</param>
         /// <returns>A collection of <see cref="PropertyComparisonResult"/> objects that detail 
         /// how the values of two properties in two different objects compare to one another.  If 
         /// a collection was provided in the <paramref name="results"/> parameter, the returned 
         /// collection is the collection that was provided through the aforementioned parameter.</returns>
-        public IDictionary<string, PropertyComparisonResult> Compare(T1 object1, T2 object2, out bool isDifferent,
+        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
+        /// data type.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
+        /// object.</exception>
+        public IDictionary<string, PropertyComparisonResult> Compare(object object1, object object2, out bool isDifferent,
             IDictionary<string, PropertyComparisonResult> results = null)
         {
-            if (results == null) results = new PropertyComparisonResultKeyedCollection();
+            #region Argument Validation
+            Guard.RequiredArgument(object1, nameof(object1));
+            Guard.RequiredArgument(object2, nameof(object2));
+            Guard.ArgumentCondition(
+                () => object1.GetType() == Type1, nameof(object1),
+                $"The provided object is not of the expected type ({Type1})."
+            );
+            Guard.ArgumentCondition(
+                () => object2.GetType() == Type2, nameof(object2),
+                $"The provided object is not of the expected type ({Type2})."
+            );
+            Guard.Condition(() => !Object.ReferenceEquals(object1, object2), "The objects to compare must be different.");
+            #endregion
+
+            if (results == null) results = new PropertyComparisonResultCollection();
             isDifferent = false;
             foreach (PropertyInfo propertyInfo in _classInfo1.Properties)
             {
@@ -188,7 +248,7 @@ namespace wj.ObjectComparer
                     if ((mappingToUse != null && mappingToUse.ForceStringValue) ||
                         propertyInfo.PropertyType != propertyInfo2.PropertyType)
                     {
-                        comparer = ResolveComparerForType(typeof (string));
+                        comparer = ResolveComparerForType(typeof(string));
                         val1 = ConvertPropertyValueToString(val1, mappingToUse == null ? null : mappingToUse.FormatString);
                         val2 = ConvertPropertyValueToString(val2, mappingToUse == null ? null : mappingToUse.TargetFormatString);
                         result |= ComparisonResult.StringCoercion;
@@ -215,6 +275,7 @@ namespace wj.ObjectComparer
                     }
                     catch (System.Exception ex)
                     {
+                        result |= ComparisonResult.Exception;
                         comparisonException = ex;
                     }
                 }
