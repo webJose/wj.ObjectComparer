@@ -44,7 +44,11 @@ namespace wj.ObjectComparer
         /// <summary>
         /// The comparison operation resulted in an exception being thrown.
         /// </summary>
-        Exception = 0x2000
+        Exception = 0x2000,
+        /// <summary>
+        /// The comparison operation could not use a comparer object.
+        /// </summary>
+        NoComparer = 0x4000
     }
 
     /// <summary>
@@ -61,12 +65,12 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Gets the property information object for the property in the first object.
         /// </summary>
-        public PropertyInfo Property1 { get; }
+        public PropertyComparisonInfo Property1 { get; }
 
         /// <summary>
         /// Gets the property information object for the property in the second object.
         /// </summary>
-        public PropertyInfo Property2 { get; }
+        public PropertyComparisonInfo Property2 { get; }
 
         /// <summary>
         /// Gets the property value for the property in the first object.
@@ -101,8 +105,8 @@ namespace wj.ObjectComparer
         /// <param name="value2">Value found in the property of the second object.</param>
         /// <param name="mappingUsed">Mapping information used during the comparison operation.</param>
         /// <param name="exception">Exception raised during the comparison operation, if any.</param>
-        public PropertyComparisonResult(ComparisonResult result, PropertyInfo property1, object value1,
-            PropertyInfo property2 = null, object value2 = null, PropertyMapping mappingUsed = null,
+        public PropertyComparisonResult(ComparisonResult result, PropertyComparisonInfo property1, object value1,
+            PropertyComparisonInfo property2 = null, object value2 = null, PropertyMapping mappingUsed = null,
             System.Exception exception = null)
         {
             Result = result;
@@ -133,26 +137,37 @@ namespace wj.ObjectComparer
             {
                 val = $"{Result} {Property1}";
             }
+            else if (ComparisonResultContains(Result, ComparisonResult.Exception))
+            {
+                val = $"{Result} {Property1} {Exception.GetType()}: {Exception.Message}";
+            }
             else if (Result != ComparisonResult.Undefined && Result != ComparisonResult.StringCoercion)
             {
-                char op = default(char);
-                switch (Result & ~ComparisonResult.StringCoercion)
+                string op = null;
+                switch (Result & ~(ComparisonResult.StringCoercion | ComparisonResult.NoComparer))
                 {
                     case ComparisonResult.Equal:
-                        op = '=';
+                        op = "=";
+                        break;
+                    case ComparisonResult.NotEqual:
+                        op = "!=";
                         break;
                     case ComparisonResult.GreaterThan:
-                        op = '>';
+                        op = ">";
+                        break;
+                    case ComparisonResult.LessThan:
+                        op = "<";
                         break;
                     default:
-                        op = '<';
+                        op = "??";
                         break;
                 }
-                val = $"{(Property1 == null ? "(unspecified property)" : Property1.Name)}:  {Value1} {op} {Value2}";
+                val = $"{Property1?.Name ?? "(unspecified property)"}:  {Value1 ?? "(null)"} {op} {Value2 ?? "(null)"}";
             }
             else
             {
-                val = $"{Result}:  {(Exception == null ? "(no exception)" : Exception.Message)}";
+                //This should never happen.
+                val = $"{Result}:  (undocumented)";
             }
             return val;
         }

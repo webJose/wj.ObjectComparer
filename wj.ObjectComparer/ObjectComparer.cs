@@ -16,12 +16,10 @@ namespace wj.ObjectComparer
         /// </summary>
         /// <typeparam name="T">The type of object to compare.  This type must have been 
         /// previously registered with this class library's type scanner.</typeparam>
-        /// <param name="comparers">A collection of comparers to be used during property 
-        /// comparison execution.</param>
         /// <returns>A newly created <see cref="ObjectComparer"/> object.</returns>
-        public static ObjectComparer Create<T>(IDictionary<Type, IComparer> comparers = null)
+        public static ObjectComparer Create<T>()
         {
-            return new ObjectComparer(typeof(T), typeof(T), comparers);
+            return new ObjectComparer(typeof(T), typeof(T));
         }
 
         /// <summary>
@@ -30,12 +28,10 @@ namespace wj.ObjectComparer
         /// </summary>
         /// <typeparam name="T1">The data type of the first object.</typeparam>
         /// <typeparam name="T2">The data type of the second object.</typeparam>
-        /// <param name="comparers">A collection of comparers to be used during property 
-        /// comparison execution.</param>
         /// <returns>A newly created <see cref="ObjectComparer"/> object.</returns>
-        public static ObjectComparer Create<T1, T2>(IDictionary<Type, IComparer> comparers = null)
+        public static ObjectComparer Create<T1, T2>()
         {
-            return new ObjectComparer(typeof(T1), typeof(T2), comparers);
+            return new ObjectComparer(typeof(T1), typeof(T2));
         }
         #endregion
 
@@ -43,12 +39,12 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Type information about the data type of the first object.
         /// </summary>
-        private TypeInfo _classInfo1;
+        private TypeInfo _typeInfo1;
 
         /// <summary>
         /// Type information about thet data type of the second object.
         /// </summary>
-        private TypeInfo _classInfo2;
+        private TypeInfo _typeInfo2;
         #endregion
 
         #region Properties
@@ -69,6 +65,26 @@ namespace wj.ObjectComparer
         #endregion
 
         #region Constructors
+        private ObjectComparer(Type type1, Type type2, IDictionary<Type, IComparer> comparers)
+        {
+            Type1 = type1;
+            Type2 = type2;
+            if (comparers?.Count > 0)
+            {
+                foreach (KeyValuePair<Type, IComparer> comparerPair in comparers)
+                {
+                    Comparers.Add(comparerPair.Key, comparerPair.Value);
+                }
+            }
+        }
+
+        internal ObjectComparer(Type type1, Type type2, TypeInfo typeInfo1, TypeInfo typeInfo2, IDictionary<Type, IComparer> comparers)
+            : this(type1, type2, comparers)
+        {
+            _typeInfo1 = typeInfo1;
+            _typeInfo2 = typeInfo2;
+        }
+
         /// <summary>
         /// Creates a new instance of this class, using the optionally provided comparers to 
         /// perform property value comparison.
@@ -77,19 +93,11 @@ namespace wj.ObjectComparer
         /// comparison execution.</param>
         /// <exception cref="NoTypeInformationException">Thrown if the type of either object was 
         /// not registered with the scanner engine.</exception>
-        public ObjectComparer(Type type1, Type type2, IDictionary<Type, IComparer> comparers = null)
+        public ObjectComparer(Type type1, Type type2)
+            : this(type1, type2, null)
         {
-            Type1 = type1;
-            Type2 = type2;
-            if (comparers != null)
-            {
-                foreach (KeyValuePair<Type, IComparer> comparerPair in comparers)
-                {
-                    Comparers.Add(comparerPair.Key, comparerPair.Value);
-                }
-            }
-            SetScannedTypeInfo(Type1, ref _classInfo1);
-            SetScannedTypeInfo(Type2, ref _classInfo2);
+            SetScannedTypeInfo(Type1, ref _typeInfo1);
+            SetScannedTypeInfo(Type2, ref _typeInfo2);
         }
         #endregion
 
@@ -103,16 +111,9 @@ namespace wj.ObjectComparer
         /// with the scanner engine.</exception>
         private void SetScannedTypeInfo(Type type, ref TypeInfo ci)
         {
-            try
+            if (!Scanner.TryGetTypeInformation(type, out ci))
             {
-                lock (Scanner.SyncRoot)
-                {
-                    ci = Scanner.TypeInformation[type];
-                }
-            }
-            catch (KeyNotFoundException ex)
-            {
-                throw new NoTypeInformationException(type, innerException: ex);
+                throw new NoTypeInformationException(type);
             }
         }
 
@@ -222,7 +223,7 @@ namespace wj.ObjectComparer
 
             if (results == null) results = new PropertyComparisonResultCollection();
             isDifferent = false;
-            foreach (PropertyInfo propertyInfo in _classInfo1.Properties)
+            foreach (PropertyComparisonInfo propertyInfo in _typeInfo1.Properties)
             {
                 ComparisonResult result = ComparisonResult.Undefined;
                 //Obtain the PropertyMapping for this propertyInfo.
@@ -236,12 +237,12 @@ namespace wj.ObjectComparer
                 //Get the property value of the first object.
                 object val1 = propertyInfo.GetValue(object1);
                 object val2 = null;
-                PropertyInfo propertyInfo2 = null;
+                PropertyComparisonInfo propertyInfo2 = null;
                 System.Exception comparisonException = null;
-                if (_classInfo2.Properties.Contains(prop2Name))
+                if (_typeInfo2.Properties.Contains(prop2Name))
                 {
                     //Get the property value of the second object.
-                    propertyInfo2 = _classInfo2.Properties[prop2Name];
+                    propertyInfo2 = _typeInfo2.Properties[prop2Name];
                     val2 = propertyInfo2.GetValue(object2);
                     //Determine the comparer to use.
                     IComparer comparer = null;
@@ -273,6 +274,29 @@ namespace wj.ObjectComparer
                             result |= ComparisonResult.Equal;
                         }
                     }
+                    catch (System.ArgumentException)
+                    {
+                        //Property type does not implement IComparable and there is no comparer 
+                        //registered for the data type.
+                        result |= ComparisonResult.NoComparer;
+                        //So try to at least find out if it is equal or not.
+                        try
+                        {
+                            if (Object.Equals(val1, val2))
+                            {
+                                result |= ComparisonResult.Equal;
+                            }
+                            else
+                            {
+                                result |= ComparisonResult.NotEqual;
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            result |= ComparisonResult.Exception;
+                            comparisonException = ex;
+                        }
+                    }
                     catch (System.Exception ex)
                     {
                         result |= ComparisonResult.Exception;
@@ -287,8 +311,8 @@ namespace wj.ObjectComparer
                 PropertyComparisonResult pcr = new PropertyComparisonResult(result, propertyInfo, val1, propertyInfo2,
                     val2, mappingToUse, comparisonException);
                 results.Add(null, pcr);
-                isDifferent = isDifferent || ((result & (ComparisonResult.GreaterThan | ComparisonResult.LessThan)) !=
-                              ComparisonResult.Undefined);
+                isDifferent = isDifferent || ((result & ComparisonResult.NotEqual) ==
+                              ComparisonResult.NotEqual);
             }
             return results;
         }

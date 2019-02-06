@@ -10,7 +10,7 @@ namespace wj.ObjectComparer
     {
         #region Properties
         /// <summary>
-        /// Gets the data type of the property in the destination data type.
+        /// Gets the data type the property belongs to.
         /// </summary>
         public Type TargetType { get; }
 

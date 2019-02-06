@@ -23,7 +23,7 @@ namespace wj.ObjectComparer
         /// Use this object to synchronize access to <see cref="Scanner.TypeInformation"/> and 
         /// <see cref="Scanner._comparers"/>.
         /// </summary>
-        public static readonly object SyncRoot = new object();
+        private static readonly object SyncRoot = new object();
 
         /// <summary>
         /// Type information to be used for property-by-property object comparison.  If a data 
@@ -78,6 +78,16 @@ namespace wj.ObjectComparer
             }
         }
 
+        internal static bool TryGetTypeInformation(Type type, out TypeInfo typeInfo)
+        {
+            lock(SyncRoot)
+            {
+                bool exists = TypeInformation.Contains(type);
+                typeInfo = exists ? TypeInformation[type] : null;
+                return exists;
+            }
+        }
+
         /// <summary>
         /// Registers a comparer object for a specific data type.  Use this method to ensure a 
         /// particular comparer is used for any specific purpose.
@@ -93,50 +103,60 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
-        /// Creates and returns a list of <see cref="PropertyInfo"/> objects from a list of 
+        /// Creates and returns a list of <see cref="PropertyComparisonInfo"/> objects from a list of 
         /// <see cref="PropertyDescriptor"/> objects.
         /// </summary>
         /// <param name="pdColl">The collection of property descriptors.</param>
-        /// <returns>An enumeration that lists the created <see cref="PropertyInfo"/> objects.</returns>
-        private static IEnumerable<PropertyInfo> ObtainPropertyInfos(PropertyDescriptorCollection pdColl)
+        /// <param name="ignorePropertyMappings">A Boolean value that indicates if property 
+        /// mappings defined through attributes should be ignored.</param>
+        /// <returns>An enumeration that lists the created <see cref="PropertyComparisonInfo"/> objects.</returns>
+        private static IEnumerable<PropertyComparisonInfo> ObtainPropertyInfos(PropertyDescriptorCollection pdColl, bool ignorePropertyMappings)
         {
             foreach (PropertyDescriptor pd in pdColl)
             {
-                PropertyInfo pi = new PropertyInfo(pd);
-                //Obtain mappings.
-                foreach (PropertyMappingAttribute attribute in pd.Attributes.OfType<PropertyMappingAttribute>())
+                PropertyComparisonInfo pi = new PropertyComparisonInfo(pd);
+                if (!ignorePropertyMappings)
                 {
-                    if (attribute == null) continue;
-                    pi.Mappings.Add(attribute.PropertyMapping);
+                    //Obtain mappings.
+                    foreach (PropertyMappingAttribute attribute in pd.Attributes.OfType<PropertyMappingAttribute>())
+                    {
+                        if (attribute == null) continue;
+                        pi.Mappings.Add(attribute.PropertyMapping);
+                    }
                 }
                 yield return pi;
             }
         }
 
         /// <summary>
-        /// Registers a data type so it is ready for property-by-property object comparison.
+        /// Creates a <see cref="TypeInfo"/> object with the necessary property information to 
+        /// compare objects of the specified type.
         /// </summary>
-        /// <param name="type">The data type to register.</param>
-        public static void RegisterType(Type type)
+        /// <param name="type">The data type whose type information is requested.</param>
+        /// <param name="ignorePropertyMappings">A Boolean value that indicates if property 
+        /// mappings defined through attributes should be ignored.  If the argument is not 
+        /// provided, then by default the property mappings are included.</param>
+        /// <returns>A <see cref="TypeInfo"/> object that can be used to compare properties.</returns>
+        internal static TypeInfo BuildTypeInformation(Type type, bool ignorePropertyMappings = false)
         {
-            TypeInfo ci = new TypeInfo(type);
+            TypeInfo ti = new TypeInfo(type, ignorePropertyMappings);
 #if NET461
             //Obtain PropertyMapping data from MetadataTypeAttribute, if present.
-            PropertyInfoCollection metadataOnlyPropertyInfos = new PropertyInfoCollection();
+            PropertyComparisonInfoCollection metadataOnlyPropertyInfos = new PropertyComparisonInfoCollection();
             MetadataTypeAttribute att = type.GetCustomAttribute<MetadataTypeAttribute>();
             if (att != null)
             {
-                foreach (PropertyInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(att.MetadataClassType)))
+                foreach (PropertyComparisonInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(att.MetadataClassType), ignorePropertyMappings))
                 {
                     metadataOnlyPropertyInfos.Add(pi);
                 }
             }
 #endif
             //Now process regular property descriptors.
-            foreach (PropertyInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(type)))
+            foreach (PropertyComparisonInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(type), ignorePropertyMappings))
             {
 #if NET461
-                    if (metadataOnlyPropertyInfos.Contains(pi.Name))
+                    if (!ignorePropertyMappings && metadataOnlyPropertyInfos.Contains(pi.Name))
                     {
                         //Merge the PropertyMapping objects.
                         foreach (PropertyMapping pm in metadataOnlyPropertyInfos[pi.Name].Mappings)
@@ -146,11 +166,42 @@ namespace wj.ObjectComparer
                         }
                     }
 #endif
-                ci.Properties.Add(pi);
+                ti.Properties.Add(pi);
             }
+            return ti;
+        }
+
+        /// <summary>
+        /// Registers a data type so it is ready for property-by-property object comparison.
+        /// </summary>
+        /// <param name="type">The data type to register.</param>
+        public static void RegisterType(Type type)
+        {
+            TypeInfo ti = BuildTypeInformation(type);
+            //Register the type information object in the scanner's collection.
             lock (SyncRoot)
             {
-                TypeInformation.Add(ci);
+                if (!TypeInformation.Contains(ti.TargetType))
+                {
+                    TypeInformation.Add(ti);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unregisters a data type from the global type registry.  Unregistered types can no 
+        /// longer be used to create object comparers, but any previously-created comparers will 
+        /// work.
+        /// </summary>
+        /// <param name="type">The data type to unregister.</param>
+        public static void UnregisterType(Type type)
+        {
+            lock(SyncRoot)
+            {
+                if (TypeInformation.Contains(type))
+                {
+                    TypeInformation.Remove(type);
+                }
             }
         }
 

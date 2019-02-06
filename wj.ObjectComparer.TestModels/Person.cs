@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace wj.ObjectComparer.Tester.Models
+namespace wj.ObjectComparer.TestModels
 {
     public enum Genders
     {
@@ -16,6 +16,5 @@ namespace wj.ObjectComparer.Tester.Models
         public string LastName { get; set; }
         public string Email { get; set; }
         public Genders Gender { get; set; }
-        public DateTime BirthDate { get; set; }
     }
 }

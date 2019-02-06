@@ -7,35 +7,35 @@ namespace wj.ObjectComparer
     /// Defines the necessary data to compare one property value to another property value in a 
     /// different object.
     /// </summary>
-    public class PropertyInfo
+    public class PropertyComparisonInfo
     {
-        #region Private Data
+        #region Data
         /// <summary>
         /// The original property descriptor.
         /// </summary>
-        private readonly PropertyDescriptor _propertyDescriptor;
+        internal readonly PropertyDescriptor PropertyDescriptor;
         #endregion
 
         #region Properties
         /// <summary>
         /// Gets the property's name.
         /// </summary>
-        public string Name => _propertyDescriptor.Name;
+        public string Name => PropertyDescriptor.Name;
 
         /// <summary>
         /// Gets the property's display name.
         /// </summary>
-        public string DisplayName => _propertyDescriptor.DisplayName;
+        public string DisplayName => PropertyDescriptor.DisplayName;
 
         /// <summary>
         /// Gets the property's data type.
         /// </summary>
-        public Type PropertyType => _propertyDescriptor.PropertyType;
+        public Type PropertyType => PropertyDescriptor.PropertyType;
 
         /// <summary>
         /// Gets the collection of property mappings.
         /// </summary>
-        public PropertyMappingCollection Mappings { get; }
+        public PropertyMappingCollection Mappings { get; } = new PropertyMappingCollection();
         #endregion
 
         #region Constructors
@@ -43,11 +43,9 @@ namespace wj.ObjectComparer
         /// Creates a new instance of this class.
         /// </summary>
         /// <param name="propertyDescriptor">Original roperty descriptor object.</param>
-        public PropertyInfo(PropertyDescriptor propertyDescriptor)
+        public PropertyComparisonInfo(PropertyDescriptor propertyDescriptor)
         {
-            if (propertyDescriptor == null) throw new ArgumentNullException("propertyDescriptor");
-            _propertyDescriptor = propertyDescriptor;
-            Mappings = new PropertyMappingCollection();
+            PropertyDescriptor = propertyDescriptor ?? throw new ArgumentNullException("propertyDescriptor");
         }
         #endregion
 
@@ -59,7 +57,7 @@ namespace wj.ObjectComparer
         /// <returns>The property's value.</returns>
         public object GetValue(object obj)
         {
-            return _propertyDescriptor.GetValue(obj);
+            return PropertyDescriptor.GetValue(obj);
         }
 
         /// <inheritdoc />
