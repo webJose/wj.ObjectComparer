@@ -1,6 +1,7 @@
 # wj.ObjectComparer
 
-# English
+## English
+
 [Español](#Español)
 
 With this library any developer can easily compare objects of the same class or objects of entirely different classes on a property-by-property basis.
@@ -9,11 +10,11 @@ The most basic functionality is based on property names:  Properties in the diff
 
 Its most common usage is applications that rely heavily on data modeling.  It can be used to quickly determine changes between versions of a data record, or taking decisions about the differences in data between a model and a corresponding ViewModel, for instance.
 
-## How to Install
+### How to Install
 
-The simplest way is via NuGet.  The package is published @ [https://www.nuget.org/packages/wj.ObjectComparer].  If not, then the source code can be compiled and the resulting DLL file can be referenced directly.
+The simplest way is via NuGet.  The package is published @ [wj.ObjectExplorer](https://www.nuget.org/packages/wj.ObjectComparer).  If not, then the source code can be compiled and the resulting DLL file can be referenced directly.
 
-## Quickstart
+### Quickstart
 
 Follow these simple steps:
 
@@ -22,7 +23,7 @@ Follow these simple steps:
 3. Using the comparer object from #2 above, run any of the `Compare()` methods and capture the result.
 4. If you call any of the overloads that return a collection, you can now examine the individual property results.
 
-### Step 1:  Registering a Data Type
+#### Step 1:  Registering a Data Type
 
 In its most basic form, this library requires that the types of objects to be compared be registered, or scanned, prior to attempting comparison.  If code attempts to construct an object comparer for an object type not yet scanned, a `NoTypeInformationException` exception will be thrown.  Run the following code only once per lifetime cycle.
 
@@ -56,7 +57,7 @@ public void SomeOnStartOrMainOrSomeOtherAppropriatePlace()
 }
 ```
 
-### Step 2:  Creating an Object Comparer
+#### Step 2:  Creating an Object Comparer
 
 Once the data types involved have been scanned, object comparers that compare objects of those types can be created now.
 
@@ -78,7 +79,7 @@ ObjectComparer oc = ObjectComparer.Create<MyModel, MyModelVM>();
 ObjectComparer oc = ObjectComparer.Create<MyModel>();
 ```
 
-### All Steps:  Putting Things Together
+#### All Steps:  Putting Things Together
 
 Assuming type registration already took place, compare like this:
 
@@ -120,7 +121,8 @@ else if (pcr.Result != ComparisonResult.Equal)
 
 For more information and advanced usage, refer to the wiki (coming soon).
 
-# Español
+## Español
+
 [English](#English)
 
 Con esta biblioteca cualquier desarrollador puede fácilmente comparar objetos de la misma clase u objetos de clases completamente diferentes propiedad por propiedad.
@@ -129,11 +131,11 @@ En su forma más básica, su funcionalidad se basa en nombres de propiedades:  P
 
 El uso más comun está en aplicaciones que se basan fuertemente en modelos de datos.  Puede ser usado para determinar rápidamente cambios entre versiones de un registro de datos, o tomar decisiones acerca de las diferencias en datos entre un modelo y su correspondiente modelo-vista, por ejemplo.
 
-## Cómo Instalar
+### Cómo Instalar
 
-Lo más simple es via NuGet.  El paquete está publicado @ [https://www.nuget.org/packages/wj.ObjectComparer].  Si no, entonces el código fuente puede compilarse y el archivo DLL resultante puede referenciarse directamente.
+Lo más simple es via NuGet.  El paquete está publicado @ [wj.ObjectExplorer](https://www.nuget.org/packages/wj.ObjectComparer).  Si no, entonces el código fuente puede compilarse y el archivo DLL resultante puede referenciarse directamente.
 
-## Inicio Rápido
+### Inicio Rápido
 
 Siga estos simples pasos:
 
@@ -142,12 +144,12 @@ Siga estos simples pasos:
 3. Usando el comparador creado en el paso #2, ejecute cualquiera de los métodos `Compare()` y capture el resultado.
 4. Si utilizó una de las sobrecargas que devuelven una colección, ahora puede examinar los resultados individuales de las propiedades.
 
-### Paso 1:  Registrando un Tipo de Datos
+#### Paso 1:  Registrando un Tipo de Datos
 
 En su forma más básica, esta biblioteca requiere que los tipos de objetos a comparar estén registrados, o escaneados, antes de intentar cualquier comparación.  Si código intenta construir un objeto comparador para un tipo de objeto no escaneado, se arrojará una excepción de tipo `NoTypeInformationException`.  Ejecute el siguiente código solamente una vez durante el ciclo de vida de la aplicación.
 
 ```c#
-public void AlgunOnStartOMainOoAlgunOtroLugarApropiado()
+public void AlgunOnStartOMainOAlgunOtroLugarApropiado()
 {
     Scanner.RegisterType(typeof(MyModel));
 }
@@ -170,13 +172,13 @@ public struct MyStruct { ... }
 Ahora solicite al escáner que escanee el ensamblado que contiene los modelos.  Nótese que este escaneo puede repetirse para otros ensamblados de igual manera para incluir todos los tipos de datos necesarios.
 
 ```c#
-public void AlgunOnStartOMainOoAlgunOtroLugarApropiado()
+public void AlgunOnStartOMainOAlgunOtroLugarApropiado()
 {
     Scanner.ScanAssembly(Assembly.GetExecutingAssembly());
 }
 ```
 
-### Paso 2:  Creando el Objeto Comparador
+#### Paso 2:  Creando el Objeto Comparador
 
 Una vez que los tipos de datos involucrados han sido escaneados, se puede ahora crear objetos comparadores que comparan objetos de esos tipos.
 
@@ -198,7 +200,7 @@ ObjectComparer oc = ObjectComparer.Create<MyModel, MyModelVM>();
 ObjectComparer oc = ObjectComparer.Create<MyModel>();
 ```
 
-### Todos los Pasos:  Poniendo Todo Junto
+#### Todos los Pasos:  Poniendo Todo Junto
 
 Asumiendo que el registro de tipos ya ha sido ejecutado, compare objetos de esta manera:
 
