@@ -12,7 +12,7 @@ Its most common usage is applications that rely heavily on data modeling.  It ca
 
 ### How to Install
 
-The simplest way is via NuGet.  The package is published @ [wj.ObjectExplorer](https://www.nuget.org/packages/wj.ObjectComparer).  If not, then the source code can be compiled and the resulting DLL file can be referenced directly.
+The simplest way is via NuGet.  The package is published @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  If not, then the source code can be compiled and the resulting DLL file can be referenced directly.
 
 ### Quickstart
 
@@ -133,7 +133,7 @@ El uso más comun está en aplicaciones que se basan fuertemente en modelos de d
 
 ### Cómo Instalar
 
-Lo más simple es via NuGet.  El paquete está publicado @ [wj.ObjectExplorer](https://www.nuget.org/packages/wj.ObjectComparer).  Si no, entonces el código fuente puede compilarse y el archivo DLL resultante puede referenciarse directamente.
+Lo más simple es via NuGet.  El paquete está publicado @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  Si no, entonces el código fuente puede compilarse y el archivo DLL resultante puede referenciarse directamente.
 
 ### Inicio Rápido
 
