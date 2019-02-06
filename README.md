@@ -9,6 +9,10 @@ The most basic functionality is based on property names:  Properties in the diff
 
 Its most common usage is applications that rely heavily on data modeling.  It can be used to quickly determine changes between versions of a data record, or taking decisions about the differences in data between a model and a corresponding ViewModel, for instance.
 
+## How to Install
+
+The simplest way is via NuGet.  The package is published @ [https://www.nuget.org/packages/wj.ObjectComparer].  If not, then the source code can be compiled and the resulting DLL file can be referenced directly.
+
 ## Quickstart
 
 Follow these simple steps:
@@ -124,6 +128,10 @@ Con esta biblioteca cualquier desarrollador puede fácilmente comparar objetos d
 En su forma más básica, su funcionalidad se basa en nombres de propiedades:  Propiedades en los objetos son pareados si tienen el mismo nombre.  El procedimiento es sensible a las mayúsculas.  Sin embargo, esta biblioteca permite mapeo (pareo) personalizado ya sea via el atributo `PropertyMappingAttribute` o bien usando sintaxis fluida de configuración.
 
 El uso más comun está en aplicaciones que se basan fuertemente en modelos de datos.  Puede ser usado para determinar rápidamente cambios entre versiones de un registro de datos, o tomar decisiones acerca de las diferencias en datos entre un modelo y su correspondiente modelo-vista, por ejemplo.
+
+## Cómo Instalar
+
+Lo más simple es via NuGet.  El paquete está publicado @ [https://www.nuget.org/packages/wj.ObjectComparer].  Si no, entonces el código fuente puede compilarse y el archivo DLL resultante puede referenciarse directamente.
 
 ## Inicio Rápido
 
