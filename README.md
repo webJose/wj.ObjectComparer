@@ -6,7 +6,7 @@
 
 With this library any developer can easily compare objects of the same class or objects of entirely different classes on a property-by-property basis.
 
-The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMappingAttribute` attribute or by using the fluent configuration syntax.
+The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using the fluent configuration syntax.
 
 Its most common usage is applications that rely heavily on data modeling.  It can be used to quickly determine changes between versions of a data record, or taking decisions about the differences in data between a model and a corresponding ViewModel, for instance.
 
@@ -34,9 +34,9 @@ public void SomeOnStartOrMainOrSomeOtherAppropriatePlace()
 }
 ```
 
-The above code is simple and keep model code clean.  It is also the only option if you do not have access to modify the model's code in order to use attributed scanning.
+The above code is simple and keep model code clean.  It is also the recommended option if you do not have access to modify the model's code in order to use attributed scanning.  There is another method:  Fluent configuration does not require pre-registration of a data type, as it will scan the type on demand, but the current implementation does not cache the result, so performance hits will be seen every time a comparer is created via fluent configuration unless the data type is registered with the scanner.
 
-Speaking of which, attributed scanning is super simple and allows you to cover multiple models in an assembly with a single line of code.  The only drawback is that it requires access to the source code of the data types being compared.  This may not always be a possibility.
+Speaking of attributed scanning, attributed scanning is super simple and allows you to cover multiple models in an assembly with a single line of code.  The only drawback is that it requires access to the source code of the data types being compared.  This may not always be a possibility.
 
 First, apply the `ScanForPropertyComparisonAttribute` attribute to any data types that will be compared.
 
@@ -47,6 +47,43 @@ public class MyModel { ... }
 [ScanForPropertyComparison]
 public struct MyStruct { ... }
 ```
+
+At this point, property mapping is possible.  From within a to-be-scanned data type, mark any properties with the `PropertyMapAttribute` attribute.  You may opt to map to another property, or to ignore the property.  You may also ignore a property altogether for comparison against any other data type with the `IgnoreForComparisonAttribute` attribute.
+
+```c#
+[ScanForPropertyComparison]
+public class MyModel
+{
+    //This map tells an object comparer that the Id property of MyModel is compared against
+    //the ModelId of the MyModelVM class, of course, when compared against an object of said class!
+    [PropertyMap(typeof(MyModelVM), PropertyMapOperation.MapToProperty, nameof(MyModelVM.ModelId))]
+    public long Id { get; set; }
+    
+    //Multiple maps are allowed.  Add one per target data type.
+    [PropertyMap(typeof(MyModelVM), PropertyMapOperation.IgnoreProperty)]
+    [PropertyMap(typeof(MyModel), PropertyMapOperation.IgnoreProperty)]
+    public byte[] RowVersion { get; set; }
+    
+    //A property that is ignored when comparing against all data types.
+    [IgnoreForComparison]
+    public string LastModifiedBy { get; set; }
+    
+    //A property that is ignored when comparing against all data types except for the ones where a map exists.
+    //VERSION 0.4.0:  CUMBERSOME FOR SAME-DATA-TYPE COMPARES.  WILL BE IMPROVED IN FUTURE VERSIONS!!
+    [IgnoreForComparison]
+    [PropertyMap(typeof(MyModel), PropertyMapOperation.MapToProperty, nameof(MyModel.CreatedBy)]
+    public string CreatedBy { get; set; }
+    ...
+}
+
+[ScanForPropertyComparison]
+public class MyModelVM { ... }
+
+[ScanForPropertyComparison]
+public struct MyStruct { ... }
+```
+
+**NOTE:**  Property maps are *not* bidirectional.  Just because in the example above a map exists like so MyModel.Id -> MyModelVM.ModelId, the reverse is not true.  There is no automatic mapping the other way around (MyModelVM.ModelId -> MyModel.Id).
 
 Now request the scanner to scan the assembly containing the models.  Note that the scan can be repeated on other assemblies as well to include all the necessary data types.
 
@@ -99,6 +136,10 @@ else if (pcr.Result == ComparisonResult.GreaterThan)
 {
     //Maybe show the data in a red background.
 }
+else if (pcr.Result == ComparisonResult.PropertyIgnored)
+{
+    //Maybe you would like to log this or something.
+}
 else if (pcr.Result != ComparisonResult.Equal)
 {
     //Cover potential problems like property not found in object 2, or an exception raised during comparison.
@@ -127,7 +168,7 @@ For more information and advanced usage, refer to the wiki (coming soon).
 
 Con esta biblioteca cualquier desarrollador puede fácilmente comparar objetos de la misma clase u objetos de clases completamente diferentes propiedad por propiedad.
 
-En su forma más básica, su funcionalidad se basa en nombres de propiedades:  Propiedades en los objetos son pareados si tienen el mismo nombre.  El procedimiento es sensible a las mayúsculas.  Sin embargo, esta biblioteca permite mapeo (pareo) personalizado ya sea via el atributo `PropertyMappingAttribute` o bien usando sintaxis fluida de configuración.
+En su forma más básica, su funcionalidad se basa en nombres de propiedades:  Propiedades en los objetos son pareados si tienen el mismo nombre.  El procedimiento es sensible a las mayúsculas.  Sin embargo, esta biblioteca permite mapeo (pareo) personalizado ya sea via el atributo `PropertyMapAttribute` o bien usando sintaxis fluida de configuración.
 
 El uso más comun está en aplicaciones que se basan fuertemente en modelos de datos.  Puede ser usado para determinar rápidamente cambios entre versiones de un registro de datos, o tomar decisiones acerca de las diferencias en datos entre un modelo y su correspondiente modelo-vista, por ejemplo.
 
@@ -155,9 +196,9 @@ public void AlgunOnStartOMainOAlgunOtroLugarApropiado()
 }
 ```
 
-El código mostrado arriba es simple y mantiene el código del modelo limpio.  También es la única opción si no se tiene acceso a modificar el código del modelo para utilizar escaneo por atributos.
+El código mostrado arriba es simple y mantiene el código del modelo limpio.  También es la opción recomendada si no se tiene acceso a modificar el código del modelo para utilizar escaneo por atributos.  Existe otro método:  Configuración fluida no requiere de un pre-registro de un tipo de datos ya que lo escaneará cuando se demande, pero la implementación actual no guarda el resultado, así que puede experimentarse detrimentos en desempeño cada vez que se crea un comparador a través de configuración fluida, a menos claro que el tipo de datos esté registrado con el escáner.
 
-Hablando del diablo, escaneo por atributos es súper simple y permite cubrir múltiples modelos en un ensamblado con una única línea de código.  El único detalle es que requiere de acceso al código fuente de los tipos de datos que serán comparados.  Esto no siempre es una posibilidad.
+Hablando de escaneo por atributos, escaneo por atributos es súper simple y permite cubrir múltiples modelos en un ensamblado con una única línea de código.  El único detalle es que requiere de acceso al código fuente de los tipos de datos que serán comparados.  Esto no siempre es una posibilidad.
 
 Primero aplique el atributo `ScanForPropertyComparisonAttribute` a los tipos de datos que serán comparados.
 
@@ -168,6 +209,42 @@ public class MyModel { ... }
 [ScanForPropertyComparison]
 public struct MyStruct { ... }
 ```
+En este punto es posible hacer mapeo (o pareo) personalizado de propiedades.  Dentro de una clase que será escaneada, marque cualquier propiedad con el atributo `PropertyMapAttribute`.  Puede optar por parear la propiedad con otra, o bien ignorar la propiedad.  También puede ignorar una propiedad completamente para comparación contra cualquier otro tipo de dato con el atributo `IgnoreForComparisonAttribute`.
+
+```c#
+[ScanForPropertyComparison]
+public class MyModel
+{
+    //Este mapa le dice a un comparador que la propiedad Id de MyModel es comparada contra la propiedad
+    //ModelId de la clase MyModelVM, obviamente, cuando se compara contra un objeto de dicha clase!
+    [PropertyMap(typeof(MyModelVM), PropertyMapOperation.MapToProperty, nameof(MyModelVM.ModelId))]
+    public long Id { get; set; }
+    
+    //Se permiten múltiples mapas.  Agregue uno para cada tipo de datos destino.
+    [PropertyMap(typeof(MyModelVM), PropertyMapOperation.IgnoreProperty)]
+    [PropertyMap(typeof(MyModel), PropertyMapOperation.IgnoreProperty)]
+    public byte[] RowVersion { get; set; }
+    
+    //Una propiedad ignorada para comparación contra cualquier tipo de datos.
+    [IgnoreForComparison]
+    public string LastModifiedBy { get; set; }
+    
+    //Una propiedad ignorada para comparación contra cualquier tipo de datos excepto aquellos que tienen mapa.
+    //VERSIÓN 0.4.0:  INCÓMODO PARA COMPARACIONES CON EL MISMO TIPO.  SE MEJORARÁ EN FUTURAS VERSIONES!!
+    [IgnoreForComparison]
+    [PropertyMap(typeof(MyModel), PropertyMapOperation.MapToProperty, nameof(MyModel.CreatedBy)]
+    public string CreatedBy { get; set; }
+    ...
+}
+
+[ScanForPropertyComparison]
+public class MyModelVM { ... }
+
+[ScanForPropertyComparison]
+public struct MyStruct { ... }
+```
+
+**NOTA:**  Los mapas de propiedades *no* son bidireccionales.  Solamente porque en el ejemplo mostrado existe un mapa MyModel.Id -> MyModelVM.ModelId, el inverso no es cierto.  No hay un mapeo automático para la forma inversa (MyModelVM.ModelId -> MyModel.Id).
 
 Ahora solicite al escáner que escanee el ensamblado que contiene los modelos.  Nótese que este escaneo puede repetirse para otros ensamblados de igual manera para incluir todos los tipos de datos necesarios.
 
@@ -219,6 +296,10 @@ if (pcr.Result == ComparisonResult.LessThan)
 else if (pcr.Result == ComparisonResult.GreaterThan)
 {
     //Tal vez mostrar el dato en un fondo rojo.
+}
+else if (pcr.Result == ComparisonResult.PropertyIgnored)
+{
+    //Tal vez registrar esto en una bitácora o algo similar.
 }
 else if (pcr.Result != ComparisonResult.Equal)
 {
