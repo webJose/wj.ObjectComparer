@@ -223,72 +223,88 @@ namespace wj.ObjectComparer
 
             if (results == null) results = new PropertyComparisonResultCollection();
             isDifferent = false;
-            foreach (PropertyComparisonInfo propertyInfo in _typeInfo1.Properties)
+            foreach (PropertyComparisonInfo pci1 in _typeInfo1.Properties)
             {
                 ComparisonResult result = ComparisonResult.Undefined;
                 //Obtain the PropertyMapping for this propertyInfo.
                 //If none, map by property name.
-                PropertyMapping mappingToUse = null;
-                if (propertyInfo.Mappings.Contains(Type2))
+                PropertyMap mapToUse = null;
+                if (pci1.Mappings.Contains(Type2))
                 {
-                    mappingToUse = propertyInfo.Mappings[Type2];
+                    mapToUse = pci1.Mappings[Type2];
                 }
-                string prop2Name = mappingToUse == null ? propertyInfo.Name : mappingToUse.TargetProperty;
-                //Get the property value of the first object.
-                object val1 = propertyInfo.GetValue(object1);
+                object val1 = null;
                 object val2 = null;
-                PropertyComparisonInfo propertyInfo2 = null;
+                PropertyComparisonInfo pci2 = null;
                 System.Exception comparisonException = null;
-                if (_typeInfo2.Properties.Contains(prop2Name))
+                //Ignore the property if no mapping exists and is being ignored for all types, 
+                //or mapping exists and it states the property must be ignored.
+                if ((mapToUse == null && pci1.IgnoreProperty)
+                    || (mapToUse?.Operation == PropertyMapOperation.IgnoreProperty))
                 {
-                    //Get the property value of the second object.
-                    propertyInfo2 = _typeInfo2.Properties[prop2Name];
-                    val2 = propertyInfo2.GetValue(object2);
-                    //Determine the comparer to use.
-                    IComparer comparer = null;
-                    if ((mappingToUse != null && mappingToUse.ForceStringValue) ||
-                        propertyInfo.PropertyType != propertyInfo2.PropertyType)
+                    result |= ComparisonResult.PropertyIgnored;
+                }
+                else
+                {
+                    string prop2Name = mapToUse?.TargetProperty ?? pci1.Name;
+                    //Get the property value of the first object.
+                    val1 = pci1.GetValue(object1);
+                    if (_typeInfo2.Properties.Contains(prop2Name))
                     {
-                        comparer = ResolveComparerForType(typeof(string));
-                        val1 = ConvertPropertyValueToString(val1, mappingToUse == null ? null : mappingToUse.FormatString);
-                        val2 = ConvertPropertyValueToString(val2, mappingToUse == null ? null : mappingToUse.TargetFormatString);
-                        result |= ComparisonResult.StringCoercion;
-                    }
-                    else
-                    {
-                        comparer = ResolveComparerForType(propertyInfo.PropertyType);
-                    }
-                    try
-                    {
-                        int comp = comparer.Compare(val1, val2);
-                        if (comp < 0)
+                        //Get the property value of the second object.
+                        pci2 = _typeInfo2.Properties[prop2Name];
+                        val2 = pci2.GetValue(object2);
+                        //Determine the comparer to use.
+                        IComparer comparer = null;
+                        if ((mapToUse?.ForceStringValue ?? false) ||
+                            pci1.PropertyType != pci2.PropertyType)
                         {
-                            result |= ComparisonResult.LessThan;
-                        }
-                        else if (comp > 0)
-                        {
-                            result |= ComparisonResult.GreaterThan;
+                            comparer = ResolveComparerForType(typeof(string));
+                            val1 = ConvertPropertyValueToString(val1, mapToUse?.FormatString);
+                            val2 = ConvertPropertyValueToString(val2, mapToUse?.TargetFormatString);
+                            result |= ComparisonResult.StringCoercion;
                         }
                         else
                         {
-                            result |= ComparisonResult.Equal;
+                            comparer = ResolveComparerForType(pci1.PropertyType);
                         }
-                    }
-                    catch (System.ArgumentException)
-                    {
-                        //Property type does not implement IComparable and there is no comparer 
-                        //registered for the data type.
-                        result |= ComparisonResult.NoComparer;
-                        //So try to at least find out if it is equal or not.
                         try
                         {
-                            if (Object.Equals(val1, val2))
+                            int comp = comparer.Compare(val1, val2);
+                            if (comp < 0)
                             {
-                                result |= ComparisonResult.Equal;
+                                result |= ComparisonResult.LessThan;
+                            }
+                            else if (comp > 0)
+                            {
+                                result |= ComparisonResult.GreaterThan;
                             }
                             else
                             {
-                                result |= ComparisonResult.NotEqual;
+                                result |= ComparisonResult.Equal;
+                            }
+                        }
+                        catch (System.ArgumentException)
+                        {
+                            //Property type does not implement IComparable and there is no comparer 
+                            //registered for the data type.
+                            result |= ComparisonResult.NoComparer;
+                            //So try to at least find out if it is equal or not.
+                            try
+                            {
+                                if (Object.Equals(val1, val2))
+                                {
+                                    result |= ComparisonResult.Equal;
+                                }
+                                else
+                                {
+                                    result |= ComparisonResult.NotEqual;
+                                }
+                            }
+                            catch (System.Exception ex)
+                            {
+                                result |= ComparisonResult.Exception;
+                                comparisonException = ex;
                             }
                         }
                         catch (System.Exception ex)
@@ -297,19 +313,14 @@ namespace wj.ObjectComparer
                             comparisonException = ex;
                         }
                     }
-                    catch (System.Exception ex)
+                    else
                     {
-                        result |= ComparisonResult.Exception;
-                        comparisonException = ex;
+                        //We are done here since there is no matching property to compare against.
+                        result |= ComparisonResult.PropertyNotFound;
                     }
                 }
-                else
-                {
-                    //We are done here since there is no matching property to compare against.
-                    result |= ComparisonResult.PropertyNotFound;
-                }
-                PropertyComparisonResult pcr = new PropertyComparisonResult(result, propertyInfo, val1, propertyInfo2,
-                    val2, mappingToUse, comparisonException);
+                PropertyComparisonResult pcr = new PropertyComparisonResult(result, pci1, val1, pci2,
+                    val2, mapToUse, comparisonException);
                 results.Add(null, pcr);
                 isDifferent = isDifferent || ((result & ComparisonResult.NotEqual) ==
                               ComparisonResult.NotEqual);

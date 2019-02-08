@@ -48,7 +48,11 @@ namespace wj.ObjectComparer
         /// <summary>
         /// The comparison operation could not use a comparer object.
         /// </summary>
-        NoComparer = 0x4000
+        NoComparer = 0x4000,
+        /// <summary>
+        /// The property has been configured to be ignored.
+        /// </summary>
+        PropertyIgnored = 0x8000
     }
 
     /// <summary>
@@ -86,7 +90,7 @@ namespace wj.ObjectComparer
         /// Returns the mapping data used for the comparison, if any was defined at the moment of 
         /// comparing the property values.
         /// </summary>
-        public PropertyMapping MappingUsed { get; }
+        public PropertyMap MapUsed { get; }
 
         /// <summary>
         /// Returns any exception raised during the comparison process for this property pair.
@@ -106,7 +110,7 @@ namespace wj.ObjectComparer
         /// <param name="mappingUsed">Mapping information used during the comparison operation.</param>
         /// <param name="exception">Exception raised during the comparison operation, if any.</param>
         public PropertyComparisonResult(ComparisonResult result, PropertyComparisonInfo property1, object value1,
-            PropertyComparisonInfo property2 = null, object value2 = null, PropertyMapping mappingUsed = null,
+            PropertyComparisonInfo property2 = null, object value2 = null, PropertyMap mappingUsed = null,
             System.Exception exception = null)
         {
             Result = result;
@@ -114,7 +118,7 @@ namespace wj.ObjectComparer
             Property2 = property2;
             Value1 = value1;
             Value2 = value2;
-            MappingUsed = mappingUsed;
+            MapUsed = mappingUsed;
             Exception = exception;
         }
         #endregion

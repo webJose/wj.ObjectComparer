@@ -7,23 +7,23 @@ namespace wj.ObjectComparer
     /// to be compared against.  Use one attribute per data type (class).
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-    public class PropertyMappingAttribute : Attribute
+    public class PropertyMapAttribute : Attribute
     {
         #region Properties
         /// <summary>
-        /// Gets the associated <see cref="PropertyMapping"/> object.
+        /// Gets the associated <see cref="PropertyMap"/> object.
         /// </summary>
-        internal PropertyMapping PropertyMapping { get; }
+        internal PropertyMap PropertyMap { get; }
 
         /// <summary>
         /// Gets the target type containing the specified target property.
         /// </summary>
-        public Type TargetType => PropertyMapping.TargetType;
+        public Type TargetType => PropertyMap.TargetType;
 
         /// <summary>
         /// Gets the target property name that will be used for comparison purposes.
         /// </summary>
-        public string TargetProperty => PropertyMapping.TargetProperty;
+        public string TargetProperty => PropertyMap.TargetProperty;
 
         /// <summary>
         /// Gets or sets an optional format string used in a call to ToString() whenever the value 
@@ -33,8 +33,8 @@ namespace wj.ObjectComparer
         /// </summary>
         public string FormatString
         {
-            get => PropertyMapping.FormatString;
-            set => PropertyMapping.FormatString = value;
+            get => PropertyMap.FormatString;
+            set => PropertyMap.FormatString = value;
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace wj.ObjectComparer
         /// </summary>
         public string TargetFormatString
         {
-            get => PropertyMapping.TargetFormatString;
-            set => PropertyMapping.TargetFormatString = value;
+            get => PropertyMap.TargetFormatString;
+            set => PropertyMap.TargetFormatString = value;
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace wj.ObjectComparer
         /// </summary>
         public bool ForceStringValue
         {
-            get => PropertyMapping.ForceStringValue;
-            set => PropertyMapping.ForceStringValue = value;
+            get => PropertyMap.ForceStringValue;
+            set => PropertyMap.ForceStringValue = value;
         }
         #endregion
 
@@ -64,12 +64,16 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Creates a new instance of this class.
         /// </summary>
-        /// <param name="targetType">The target type of the specified target property.</param>
+        /// <param name="targetType">The target type of the specified target property, or the type 
+        /// for which the property will be ignored.</param>
+        /// <param name="operation">The operation being defined.  If the operation is 
+        /// <see cref="PropertyMapOperation.MapToProperty"/>, then a target property name must be 
+        /// provided.</param>
         /// <param name="targetProperty">The target property name that will be used for comparison 
-        /// purposes.</param>
-        public PropertyMappingAttribute(Type targetType, string targetProperty)
+        /// purposes, as long as the property map does not mark the property as ignored.</param>
+        public PropertyMapAttribute(Type targetType, PropertyMapOperation operation, string targetProperty = null)
         {
-            PropertyMapping = new PropertyMapping(targetType, targetProperty);
+            PropertyMap = new PropertyMap(targetType, operation, targetProperty);
         }
         #endregion
     }

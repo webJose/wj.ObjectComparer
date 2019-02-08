@@ -66,14 +66,39 @@ namespace wj.ObjectComparer
         {
             PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
             PropertyInfo piTarget = GetPropertyInfo(targetPropExpr, nameof(targetPropExpr));
-            PropertyMapping mapping = new PropertyMapping(
+            PropertyMap mapping = new PropertyMap(
                 Type2,
+                PropertyMapOperation.MapToProperty,
                 piTarget.Name,
                 forceStringValue,
                 formatString,
                 targetFormatString
             );
             TypeInfo1.Properties[piSource.Name].Mappings.Replace(mapping);
+            return this;
+        }
+
+        public ComparerConfiguration<TSource, TDestination> IgnoreProperty<TSourceProperty>(
+            Expression<Func<TSource, TSourceProperty>> sourcePropExpr,
+            Type targetType = null
+        )
+        {
+            PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
+            PropertyComparisonInfo pci = TypeInfo1.Properties[piSource.Name];
+            if (targetType == null)
+            {
+                //Ignore for all data types.
+                pci.IgnoreProperty = true;
+            }
+            else
+            {
+                //Ignore only for the specified data type.
+                PropertyMap mapping = new PropertyMap(
+                    Type2,
+                    PropertyMapOperation.IgnoreProperty
+                );
+                pci.Mappings.Replace(mapping);
+            }
             return this;
         }
 

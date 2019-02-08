@@ -30,16 +30,16 @@ namespace wj.ObjectComparer.Tests
         public void ConfigurationIncludesAttributedPropertyMappings()
         {
             //Arrange.
-            PersonExWithPropMapping p1 = ModelsHelper.CreatePersonExWithPropMapping();
+            PersonExWithPropMap p1 = ModelsHelper.CreatePersonExWithPropMapping();
             PersonEx p2 = ModelsHelper.CreatePersonEx();
-            var config = ComparerConfigurator.Configure<PersonExWithPropMapping, PersonEx>();
+            var config = ComparerConfigurator.Configure<PersonExWithPropMap, PersonEx>();
             ObjectComparer comparer = config.CreateComparer();
 
             //Act.
             var result = comparer.Compare(p1, p2, out bool _);
 
             //Assert.
-            result[nameof(PersonExWithPropMapping.NewNickName)].MappingUsed.Should().NotBeNull();
+            result[nameof(PersonExWithPropMap.NewNickName)].MapUsed.Should().NotBeNull();
         }
 
         [Test]
@@ -47,9 +47,9 @@ namespace wj.ObjectComparer.Tests
         public void ConfigurationDoesNotIncludeAttributedPropertyPamppings()
         {
             //Arrange.
-            PersonExWithPropMapping p1 = ModelsHelper.CreatePersonExWithPropMapping();
+            PersonExWithPropMap p1 = ModelsHelper.CreatePersonExWithPropMapping();
             PersonEx p2 = ModelsHelper.CreatePersonEx();
-            var config = ComparerConfigurator.Configure<PersonExWithPropMapping, PersonEx>(true);
+            var config = ComparerConfigurator.Configure<PersonExWithPropMap, PersonEx>(true);
             ObjectComparer comparer = config.CreateComparer();
 
             //Act.
@@ -57,7 +57,7 @@ namespace wj.ObjectComparer.Tests
 
             //Assert.
             result.Should().NotBeNull();
-            result[nameof(PersonExWithPropMapping.NewNickName)].MappingUsed.Should().BeNull();
+            result[nameof(PersonExWithPropMap.NewNickName)].MapUsed.Should().BeNull();
         }
 
         [Test]
@@ -66,8 +66,8 @@ namespace wj.ObjectComparer.Tests
         {
             //Arrange.
             PersonEx p1 = ModelsHelper.CreatePersonEx();
-            PersonExWithPropMapping p2 = ModelsHelper.CreatePersonExWithPropMapping();
-            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMapping>(true)
+            PersonExWithPropMap p2 = ModelsHelper.CreatePersonExWithPropMapping();
+            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMap>(true)
                 .MapProperty(src => src.NickName, dst => dst.NewNickName);
             ObjectComparer comparer = config.CreateComparer();
 
@@ -76,10 +76,10 @@ namespace wj.ObjectComparer.Tests
 
             //Assert.
             result.Should().NotBeNull();
-            PropertyMapping map = result[nameof(PersonEx.NickName)].MappingUsed;
+            PropertyMap map = result[nameof(PersonEx.NickName)].MapUsed;
             map.Should().NotBeNull();
-            map.TargetType.Should().Be(typeof(PersonExWithPropMapping));
-            map.TargetProperty.Should().Be(nameof(PersonExWithPropMapping.NewNickName));
+            map.TargetType.Should().Be(typeof(PersonExWithPropMap));
+            map.TargetProperty.Should().Be(nameof(PersonExWithPropMap.NewNickName));
         }
 
         [Test]
@@ -88,12 +88,12 @@ namespace wj.ObjectComparer.Tests
         {
             //Arrange.
             PersonEx p1 = ModelsHelper.CreatePersonEx();
-            PersonExWithPropMapping p2 = ModelsHelper.CreatePersonExWithPropMapping();
+            PersonExWithPropMap p2 = ModelsHelper.CreatePersonExWithPropMapping();
             Mock<IComparer> customComparer = new Mock<IComparer>();
             customComparer.Setup(m => m.Compare(It.IsAny<Genders>(), It.IsAny<object>()))
                 .Returns(-1)
                 .Verifiable($"{nameof(IComparer.Compare)}() method was not invoked.");
-            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMapping>(true)
+            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMap>(true)
                 .MapProperty(src => src.NickName, dst => dst.NewNickName)
                 .AddComparer<Genders>(customComparer.Object);
             ;
@@ -113,8 +113,8 @@ namespace wj.ObjectComparer.Tests
         {
             //Arrange.
             PersonEx p1 = ModelsHelper.CreatePersonEx();
-            PersonExWithPropMapping p2 = ModelsHelper.CreatePersonExWithPropMapping();
-            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMapping>(true)
+            PersonExWithPropMap p2 = ModelsHelper.CreatePersonExWithPropMapping();
+            var config = ComparerConfigurator.Configure<PersonEx, PersonExWithPropMap>(true)
                 .MapProperty(src => src.Gender, dst => dst.Gender, true);
             ObjectComparer comparer = config.CreateComparer();
 
@@ -126,8 +126,8 @@ namespace wj.ObjectComparer.Tests
             PropertyComparisonResult pcr = result[nameof(Person.Gender)];
             pcr.Should().NotBeNull();
             (pcr.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.StringCoercion);
-            pcr.MappingUsed.Should().NotBeNull();
-            pcr.MappingUsed.ForceStringValue.Should().BeTrue();
+            pcr.MapUsed.Should().NotBeNull();
+            pcr.MapUsed.ForceStringValue.Should().BeTrue();
             pcr.Value1.Should().NotBeNull();
             pcr.Value1.Should().BeOfType<string>();
             pcr.Value2.Should().NotBeNull();
@@ -158,16 +158,63 @@ namespace wj.ObjectComparer.Tests
             pcr.Should().NotBeNull();
             (pcr.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.StringCoercion);
             (pcr.Result & ComparisonResult.NotEqual).Should().Be(ComparisonResult.NotEqual);
-            pcr.MappingUsed.Should().NotBeNull();
-            pcr.MappingUsed.ForceStringValue.Should().BeTrue();
-            pcr.MappingUsed.FormatString.Should().Be(fs1);
-            pcr.MappingUsed.TargetFormatString.Should().Be(fs2);
+            pcr.MapUsed.Should().NotBeNull();
+            pcr.MapUsed.ForceStringValue.Should().BeTrue();
+            pcr.MapUsed.FormatString.Should().Be(fs1);
+            pcr.MapUsed.TargetFormatString.Should().Be(fs2);
             pcr.Value1.Should().NotBeNull();
             pcr.Value1.Should().BeOfType<string>();
             pcr.Value1.Should().Be(birthDate.ToString(fs1));
             pcr.Value2.Should().NotBeNull();
             pcr.Value2.Should().BeOfType<string>();
             pcr.Value2.Should().Be(birthDate.ToString(fs2));
+        }
+
+        [Test]
+        [Description("Makes sure ignored properties are ignored when ignored for a specific type.")]
+        public void PropertyIsIgnoredForSpecificType()
+        {
+            //Arrange.
+            Person p1 = ModelsHelper.CreatePerson();
+            PersonEx p2 = ModelsHelper.CreatePersonEx();
+            var config = ComparerConfigurator.Configure<Person, PersonEx>()
+                .IgnoreProperty(src => src.Email, typeof(PersonEx));
+            ObjectComparer comparer = config.CreateComparer();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult pcr = result[nameof(Person.Email)];
+            pcr.Should().NotBeNull();
+            pcr.Result.Should().Be(ComparisonResult.PropertyIgnored);
+            pcr.MapUsed.Should().NotBeNull();
+            pcr.MapUsed.Operation.Should().Be(PropertyMapOperation.IgnoreProperty);
+            pcr.Property1.IgnoreProperty.Should().BeFalse();
+        }
+
+        [Test]
+        [Description("Makes sure ignored properties are ignored when ignored for all types.")]
+        public void PropertyIsIgnoredForAllTypes()
+        {
+            //Arrange.
+            Person p1 = ModelsHelper.CreatePerson();
+            PersonEx p2 = ModelsHelper.CreatePersonEx();
+            var config = ComparerConfigurator.Configure<Person, PersonEx>()
+                .IgnoreProperty(src => src.Email);
+            ObjectComparer comparer = config.CreateComparer();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult pcr = result[nameof(Person.Email)];
+            pcr.Should().NotBeNull();
+            pcr.Result.Should().Be(ComparisonResult.PropertyIgnored);
+            pcr.MapUsed.Should().BeNull();
+            pcr.Property1.IgnoreProperty.Should().BeTrue();
         }
         #endregion
     }

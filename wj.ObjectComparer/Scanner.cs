@@ -80,7 +80,7 @@ namespace wj.ObjectComparer
 
         internal static bool TryGetTypeInformation(Type type, out TypeInfo typeInfo)
         {
-            lock(SyncRoot)
+            lock (SyncRoot)
             {
                 bool exists = TypeInformation.Contains(type);
                 typeInfo = exists ? TypeInformation[type] : null;
@@ -114,14 +114,15 @@ namespace wj.ObjectComparer
         {
             foreach (PropertyDescriptor pd in pdColl)
             {
-                PropertyComparisonInfo pi = new PropertyComparisonInfo(pd);
+                bool ignoreProperty = pd.Attributes.OfType<IgnoreForComparisonAttribute>().Any();
+                PropertyComparisonInfo pi = new PropertyComparisonInfo(pd, ignoreProperty);
                 if (!ignorePropertyMappings)
                 {
                     //Obtain mappings.
-                    foreach (PropertyMappingAttribute attribute in pd.Attributes.OfType<PropertyMappingAttribute>())
+                    foreach (PropertyMapAttribute attribute in pd.Attributes.OfType<PropertyMapAttribute>())
                     {
                         if (attribute == null) continue;
-                        pi.Mappings.Add(attribute.PropertyMapping);
+                        pi.Mappings.Add(attribute.PropertyMap);
                     }
                 }
                 yield return pi;
@@ -141,7 +142,7 @@ namespace wj.ObjectComparer
         {
             TypeInfo ti = new TypeInfo(type, ignorePropertyMappings);
 #if NET461
-            //Obtain PropertyMapping data from MetadataTypeAttribute, if present.
+            //Obtain property map and ignore property data from MetadataTypeAttribute, if present.
             PropertyComparisonInfoCollection metadataOnlyPropertyInfos = new PropertyComparisonInfoCollection();
             MetadataTypeAttribute att = type.GetCustomAttribute<MetadataTypeAttribute>();
             if (att != null)
@@ -156,15 +157,18 @@ namespace wj.ObjectComparer
             foreach (PropertyComparisonInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(type), ignorePropertyMappings))
             {
 #if NET461
-                    if (!ignorePropertyMappings && metadataOnlyPropertyInfos.Contains(pi.Name))
+                if (!ignorePropertyMappings && metadataOnlyPropertyInfos.Contains(pi.Name))
+                {
+                    PropertyComparisonInfo mpi = metadataOnlyPropertyInfos[pi.Name];
+                    //See if the property is ignored; if yes, copy the setting.
+                    pi.IgnoreProperty = pi.IgnoreProperty || mpi.IgnoreProperty;
+                    //Merge the PropertyMap objects.
+                    foreach (PropertyMap pm in mpi.Mappings)
                     {
-                        //Merge the PropertyMapping objects.
-                        foreach (PropertyMapping pm in metadataOnlyPropertyInfos[pi.Name].Mappings)
-                        {
-                            if (pi.Mappings.Contains(pm.TargetType)) continue;
-                            pi.Mappings.Add(pm);
-                        }
+                        if (pi.Mappings.Contains(pm.TargetType)) continue;
+                        pi.Mappings.Add(pm);
                     }
+                }
 #endif
                 ti.Properties.Add(pi);
             }
@@ -181,7 +185,7 @@ namespace wj.ObjectComparer
             //Register the type information object in the scanner's collection.
             lock (SyncRoot)
             {
-                if (!TypeInformation.Contains(ti.TargetType))
+                if (!TypeInformation.Contains(ti.DataType))
                 {
                     TypeInformation.Add(ti);
                 }
@@ -196,7 +200,7 @@ namespace wj.ObjectComparer
         /// <param name="type">The data type to unregister.</param>
         public static void UnregisterType(Type type)
         {
-            lock(SyncRoot)
+            lock (SyncRoot)
             {
                 if (TypeInformation.Contains(type))
                 {

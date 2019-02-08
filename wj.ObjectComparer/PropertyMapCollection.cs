@@ -3,13 +3,13 @@
 namespace wj.ObjectComparer
 {
     /// <summary>
-    /// Collection of <see cref="PropertyMapping"/> objects.
+    /// Collection of <see cref="PropertyMap"/> objects.
     /// </summary>
-    public class PropertyMappingCollection : DictionaryCollection<Type, PropertyMapping>
+    public class PropertyMapCollection : DictionaryCollection<Type, PropertyMap>
     {
         #region Methods
         /// <inheritdoc />
-        protected override Type GetKeyForItem(PropertyMapping item)
+        protected override Type GetKeyForItem(PropertyMap item)
         {
             return item.TargetType;
         }
@@ -20,7 +20,7 @@ namespace wj.ObjectComparer
         /// collection, then a regular addition is performed.
         /// </summary>
         /// <param name="item">The new item to add to the collection.</param>
-        internal void Replace(PropertyMapping item)
+        internal void Replace(PropertyMap item)
         {
             Type key = GetKeyForItem(item);
             if (Contains(key))

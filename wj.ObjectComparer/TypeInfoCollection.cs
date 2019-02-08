@@ -11,7 +11,7 @@ namespace wj.ObjectComparer
         /// <inheritdoc />
         protected override Type GetKeyForItem(TypeInfo item)
         {
-            return item.TargetType;
+            return item.DataType;
         }
         #endregion
     }

@@ -12,13 +12,13 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Gets the type this object collects information for.
         /// </summary>
-        public Type TargetType { get; }
+        public Type DataType { get; }
 
         /// <summary>
         /// Gets a Boolean value indicating if this object was constructed by ignoring any 
         /// existing property mapping attributes defined in the type.
         /// </summary>
-        public bool PropertyMappingsIgnored { get; private set; }
+        public bool PropertyMappingsIgnored { get; }
 
         /// <summary>
         /// Gets a collection of objects that describe how the property values of objects of the 
@@ -32,10 +32,10 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Creates an instance of this class to gather data of the specified type.
         /// </summary>
-        /// <param name="targetType">The type being targetted by this object.</param>
-        public TypeInfo(Type targetType, bool propertyMappingsIgnored)
+        /// <param name="dataType">The type being targetted by this object.</param>
+        public TypeInfo(Type dataType, bool propertyMappingsIgnored)
         {
-            TargetType = targetType;
+            DataType = dataType;
             PropertyMappingsIgnored = propertyMappingsIgnored;
         }
         #endregion
@@ -43,13 +43,13 @@ namespace wj.ObjectComparer
         #region Methods
         internal TypeInfo Clone()
         {
-            TypeInfo ti = new TypeInfo(TargetType, PropertyMappingsIgnored);
+            TypeInfo ti = new TypeInfo(DataType, PropertyMappingsIgnored);
             foreach (PropertyComparisonInfo pci in Properties)
             {
-                PropertyComparisonInfo newPci = new PropertyComparisonInfo(pci.PropertyDescriptor);
+                PropertyComparisonInfo newPci = new PropertyComparisonInfo(pci.PropertyDescriptor, pci.IgnoreProperty);
                 if (!PropertyMappingsIgnored && pci.Mappings.Count > 0)
                 {
-                    foreach(PropertyMapping pm in pci.Mappings)
+                    foreach(PropertyMap pm in pci.Mappings)
                     {
                         newPci.Mappings.Add(pm);
                     }

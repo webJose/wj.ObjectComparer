@@ -44,9 +44,9 @@ namespace wj.ObjectComparer.Tests
             return CreatePersonCore<PersonByValUdt>();
         }
 
-        public static PersonExWithPropMapping CreatePersonExWithPropMapping()
+        public static PersonExWithPropMap CreatePersonExWithPropMapping()
         {
-            PersonExWithPropMapping p = CreatePersonCore<PersonExWithPropMapping>();
+            PersonExWithPropMap p = CreatePersonCore<PersonExWithPropMap>();
             p.NewNickName = "JP";
             return p;
         }
@@ -55,6 +55,13 @@ namespace wj.ObjectComparer.Tests
         {
             PersonEx2 p = CreatePersonCore<PersonEx2>();
             p.BirthDate = DateTime.Now.AddYears(-21);
+            return p;
+        }
+
+        public static PersonExWithPropMapIgnore CreatePersonExWithPropMapIgnore()
+        {
+            PersonExWithPropMapIgnore p = CreatePersonCore<PersonExWithPropMapIgnore>();
+            p.NewNickName = "Ignored Joe";
             return p;
         }
         #endregion
