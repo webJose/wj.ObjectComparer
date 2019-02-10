@@ -37,6 +37,10 @@ namespace wj.ObjectComparer
         /// </summary>
         GreaterThan = 0x10 | NotEqual,
         /// <summary>
+        /// The property has been configured to be ignored.
+        /// </summary>
+        PropertyIgnored = 0x20,
+        /// <summary>
         /// The value of the property in at least one of the objects was coerced to a string 
         /// before the property values were compared.
         /// </summary>
@@ -48,11 +52,7 @@ namespace wj.ObjectComparer
         /// <summary>
         /// The comparison operation could not use a comparer object.
         /// </summary>
-        NoComparer = 0x4000,
-        /// <summary>
-        /// The property has been configured to be ignored.
-        /// </summary>
-        PropertyIgnored = 0x8000
+        NoComparer = 0x4000
     }
 
     /// <summary>

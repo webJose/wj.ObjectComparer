@@ -4,6 +4,30 @@ using System.ComponentModel;
 namespace wj.ObjectComparer
 {
     /// <summary>
+    /// Defines all possible ignore property options.
+    /// </summary>
+    [Flags]
+    public enum IgnorePropertyOptions
+    {
+        /// <summary>
+        /// Property is not being ignored.
+        /// </summary>
+        DoNotIgnore = 0x0,
+        /// <summary>
+        /// Property is ignored when comparing two objects of the same type.
+        /// </summary>
+        IgnoreForSelf = 0x1,
+        /// <summary>
+        /// Property is ignored when being compared against an object of a different type.
+        /// </summary>
+        IgnoreForOthers = 0x2,
+        /// <summary>
+        /// Property is ignored in all cases.
+        /// </summary>
+        IgnoreForAll = IgnoreForSelf | IgnoreForOthers
+    }
+
+    /// <summary>
     /// Defines the necessary data to compare one property value to another property value in a 
     /// different object.
     /// </summary>
@@ -33,15 +57,15 @@ namespace wj.ObjectComparer
         public Type PropertyType => PropertyDescriptor.PropertyType;
 
         /// <summary>
-        /// Gets a Boolean value that determines if the property is ignored for comparison against 
-        /// any target data type without a property map in the <see cref="Mappings"/> collection.
+        /// Gets a value that determines if and how the property is ignored for comparison against 
+        /// target data types without a property map in the <see cref="Maps"/> collection.
         /// </summary>
-        public bool IgnoreProperty { get; internal set; }
+        public IgnorePropertyOptions IgnoreProperty { get; internal set; }
 
         /// <summary>
         /// Gets the collection of property mappings.
         /// </summary>
-        public PropertyMapCollection Mappings { get; } = new PropertyMapCollection();
+        public PropertyMapCollection Maps { get; } = new PropertyMapCollection();
         #endregion
 
         #region Constructors
@@ -51,7 +75,7 @@ namespace wj.ObjectComparer
         /// <param name="propertyDescriptor">Original roperty descriptor object.</param>
         /// <param name="ignoreProperty">A Boolean value that determines if the property is 
         /// ignored for comparison against any target data type without a property map.</param>
-        public PropertyComparisonInfo(PropertyDescriptor propertyDescriptor, bool ignoreProperty)
+        public PropertyComparisonInfo(PropertyDescriptor propertyDescriptor, IgnorePropertyOptions ignoreProperty)
         {
             PropertyDescriptor = propertyDescriptor ?? throw new ArgumentNullException(nameof(propertyDescriptor));
             IgnoreProperty = ignoreProperty;

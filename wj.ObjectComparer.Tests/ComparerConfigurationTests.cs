@@ -191,7 +191,7 @@ namespace wj.ObjectComparer.Tests
             pcr.Result.Should().Be(ComparisonResult.PropertyIgnored);
             pcr.MapUsed.Should().NotBeNull();
             pcr.MapUsed.Operation.Should().Be(PropertyMapOperation.IgnoreProperty);
-            pcr.Property1.IgnoreProperty.Should().BeFalse();
+            pcr.Property1.IgnoreProperty.Should().Be(IgnorePropertyOptions.DoNotIgnore);
         }
 
         [Test]
@@ -202,7 +202,7 @@ namespace wj.ObjectComparer.Tests
             Person p1 = ModelsHelper.CreatePerson();
             PersonEx p2 = ModelsHelper.CreatePersonEx();
             var config = ComparerConfigurator.Configure<Person, PersonEx>()
-                .IgnoreProperty(src => src.Email);
+                .IgnoreProperty(src => src.Email, IgnorePropertyOptions.IgnoreForAll);
             ObjectComparer comparer = config.CreateComparer();
 
             //Act.
@@ -214,7 +214,28 @@ namespace wj.ObjectComparer.Tests
             pcr.Should().NotBeNull();
             pcr.Result.Should().Be(ComparisonResult.PropertyIgnored);
             pcr.MapUsed.Should().BeNull();
-            pcr.Property1.IgnoreProperty.Should().BeTrue();
+            pcr.Property1.IgnoreProperty.Should().Be(IgnorePropertyOptions.IgnoreForAll);
+        }
+
+        [Test]
+        [Description("Makes sure an ignored property does not affect the overall isDifferent Boolean result.")]
+        public void IgnoredPropertyDoesNotResultInDifferent()
+        {
+            //Arrange.
+            Person p1 = ModelsHelper.CreatePerson();
+            Person p2 = ModelsHelper.CreatePerson();
+            p2.Id = p1.Id + 1;
+            var config = ComparerConfigurator.Configure<Person>()
+                .IgnoreProperty(src => src.Id, IgnorePropertyOptions.IgnoreForSelf);
+            ObjectComparer comparer = config.CreateComparer();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool isDifferent);
+
+            //Assert.
+            result.Should().NotBeNull();
+            isDifferent.Should().BeFalse();
+            result[nameof(Person.Id)].Result.Should().Be(ComparisonResult.PropertyIgnored);
         }
         #endregion
     }

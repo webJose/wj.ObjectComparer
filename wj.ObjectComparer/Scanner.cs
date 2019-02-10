@@ -78,6 +78,12 @@ namespace wj.ObjectComparer
             }
         }
 
+        /// <summary>
+        /// Attempts to retrieve type information from the scanner's cache for the specified type.
+        /// </summary>
+        /// <param name="type">The type whose type information is wanted.</param>
+        /// <param name="typeInfo">Type information retrieval parameter.</param>
+        /// <returns>True if the type information exists in the scanner's cache; false otherwise.</returns>
         internal static bool TryGetTypeInformation(Type type, out TypeInfo typeInfo)
         {
             lock (SyncRoot)
@@ -114,18 +120,18 @@ namespace wj.ObjectComparer
         {
             foreach (PropertyDescriptor pd in pdColl)
             {
-                bool ignoreProperty = pd.Attributes.OfType<IgnoreForComparisonAttribute>().Any();
-                PropertyComparisonInfo pi = new PropertyComparisonInfo(pd, ignoreProperty);
+                IgnoreForComparisonAttribute ignoreAtt = pd.Attributes.OfType<IgnoreForComparisonAttribute>().FirstOrDefault();
+                PropertyComparisonInfo pci = new PropertyComparisonInfo(pd, ignoreAtt?.IgnoreOptions ?? IgnorePropertyOptions.DoNotIgnore);
                 if (!ignorePropertyMappings)
                 {
-                    //Obtain mappings.
+                    //Obtain maps.
                     foreach (PropertyMapAttribute attribute in pd.Attributes.OfType<PropertyMapAttribute>())
                     {
                         if (attribute == null) continue;
-                        pi.Mappings.Add(attribute.PropertyMap);
+                        pci.Maps.Add(attribute.PropertyMap);
                     }
                 }
-                yield return pi;
+                yield return pci;
             }
         }
 
@@ -154,23 +160,23 @@ namespace wj.ObjectComparer
             }
 #endif
             //Now process regular property descriptors.
-            foreach (PropertyComparisonInfo pi in ObtainPropertyInfos(TypeDescriptor.GetProperties(type), ignorePropertyMappings))
+            foreach (PropertyComparisonInfo pci in ObtainPropertyInfos(TypeDescriptor.GetProperties(type), ignorePropertyMappings))
             {
 #if NET461
-                if (!ignorePropertyMappings && metadataOnlyPropertyInfos.Contains(pi.Name))
+                if (!ignorePropertyMappings && metadataOnlyPropertyInfos.Contains(pci.Name))
                 {
-                    PropertyComparisonInfo mpi = metadataOnlyPropertyInfos[pi.Name];
-                    //See if the property is ignored; if yes, copy the setting.
-                    pi.IgnoreProperty = pi.IgnoreProperty || mpi.IgnoreProperty;
+                    PropertyComparisonInfo mpci = metadataOnlyPropertyInfos[pci.Name];
+                    //Combine the IgnoreProperty values.
+                    pci.IgnoreProperty |= mpci.IgnoreProperty;
                     //Merge the PropertyMap objects.
-                    foreach (PropertyMap pm in mpi.Mappings)
+                    foreach (PropertyMap pm in mpci.Maps)
                     {
-                        if (pi.Mappings.Contains(pm.TargetType)) continue;
-                        pi.Mappings.Add(pm);
+                        if (pci.Maps.Contains(pm.TargetType)) continue;
+                        pci.Maps.Add(pm);
                     }
                 }
 #endif
-                ti.Properties.Add(pi);
+                ti.Properties.Add(pci);
             }
             return ti;
         }

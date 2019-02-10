@@ -65,6 +65,13 @@ namespace wj.ObjectComparer
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Crests a new instance of this class capable of comparing objects of the data types 
+        /// specified.
+        /// </summary>
+        /// <param name="type1">The type of the first object to compare.</param>
+        /// <param name="type2">The type of the second object to compare.</param>
+        /// <param name="comparers">A collection of comparer objects for property data types.</param>
         private ObjectComparer(Type type1, Type type2, IDictionary<Type, IComparer> comparers)
         {
             Type1 = type1;
@@ -78,6 +85,15 @@ namespace wj.ObjectComparer
             }
         }
 
+        /// <summary>
+        /// Crests a new instance of this class capable of comparing objects of the data types 
+        /// specified.
+        /// </summary>
+        /// <param name="type1">The type of the first object to compare.</param>
+        /// <param name="type2">The type of the second object to compare.</param>
+        /// <param name="typeInfo1">Type information for the first data type.</param>
+        /// <param name="typeInfo2">Type information for the second data type.</param>
+        /// <param name="comparers">A collection of comparer objects for property data types.</param>
         internal ObjectComparer(Type type1, Type type2, TypeInfo typeInfo1, TypeInfo typeInfo2, IDictionary<Type, IComparer> comparers)
             : this(type1, type2, comparers)
         {
@@ -86,11 +102,11 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
-        /// Creates a new instance of this class, using the optionally provided comparers to 
-        /// perform property value comparison.
+        /// Crests a new instance of this class capable of comparing objects of the data types 
+        /// specified.
         /// </summary>
-        /// <param name="comparers">A collection of comparers to be used during property 
-        /// comparison execution.</param>
+        /// <param name="type1">The type of the first object to compare.</param>
+        /// <param name="type2">The type of the second object to compare.</param>
         /// <exception cref="NoTypeInformationException">Thrown if the type of either object was 
         /// not registered with the scanner engine.</exception>
         public ObjectComparer(Type type1, Type type2)
@@ -229,17 +245,20 @@ namespace wj.ObjectComparer
                 //Obtain the PropertyMapping for this propertyInfo.
                 //If none, map by property name.
                 PropertyMap mapToUse = null;
-                if (pci1.Mappings.Contains(Type2))
+                if (pci1.Maps.Contains(Type2))
                 {
-                    mapToUse = pci1.Mappings[Type2];
+                    mapToUse = pci1.Maps[Type2];
                 }
                 object val1 = null;
                 object val2 = null;
                 PropertyComparisonInfo pci2 = null;
                 System.Exception comparisonException = null;
-                //Ignore the property if no mapping exists and is being ignored for all types, 
+                //Ignore the property if no mapping exists and is being ignored for type 2, 
                 //or mapping exists and it states the property must be ignored.
-                if ((mapToUse == null && pci1.IgnoreProperty)
+                bool propertyIgnored = 
+                    ((pci1.IgnoreProperty & IgnorePropertyOptions.IgnoreForSelf) == IgnorePropertyOptions.IgnoreForSelf && Type1 == Type2) ||
+                    ((pci1.IgnoreProperty & IgnorePropertyOptions.IgnoreForOthers) == IgnorePropertyOptions.IgnoreForOthers && Type1 != Type2);
+                if ((mapToUse == null && propertyIgnored)
                     || (mapToUse?.Operation == PropertyMapOperation.IgnoreProperty))
                 {
                     result |= ComparisonResult.PropertyIgnored;

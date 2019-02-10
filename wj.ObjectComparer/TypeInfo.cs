@@ -18,7 +18,7 @@ namespace wj.ObjectComparer
         /// Gets a Boolean value indicating if this object was constructed by ignoring any 
         /// existing property mapping attributes defined in the type.
         /// </summary>
-        public bool PropertyMappingsIgnored { get; }
+        public bool PropertyMapsIgnored { get; }
 
         /// <summary>
         /// Gets a collection of objects that describe how the property values of objects of the 
@@ -36,22 +36,26 @@ namespace wj.ObjectComparer
         public TypeInfo(Type dataType, bool propertyMappingsIgnored)
         {
             DataType = dataType;
-            PropertyMappingsIgnored = propertyMappingsIgnored;
+            PropertyMapsIgnored = propertyMappingsIgnored;
         }
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Creates a copy of this object.
+        /// </summary>
+        /// <returns>A type information object that contains the same information as this object.</returns>
         internal TypeInfo Clone()
         {
-            TypeInfo ti = new TypeInfo(DataType, PropertyMappingsIgnored);
+            TypeInfo ti = new TypeInfo(DataType, PropertyMapsIgnored);
             foreach (PropertyComparisonInfo pci in Properties)
             {
                 PropertyComparisonInfo newPci = new PropertyComparisonInfo(pci.PropertyDescriptor, pci.IgnoreProperty);
-                if (!PropertyMappingsIgnored && pci.Mappings.Count > 0)
+                if (!PropertyMapsIgnored && pci.Maps.Count > 0)
                 {
-                    foreach(PropertyMap pm in pci.Mappings)
+                    foreach(PropertyMap pm in pci.Maps)
                     {
-                        newPci.Mappings.Add(pm);
+                        newPci.Maps.Add(pm);
                     }
                 }
                 ti.Properties.Add(newPci);
