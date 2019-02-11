@@ -284,7 +284,7 @@ Ok, puede ser que haya mentido.  Esto no es *realmente* necesario.  Si se usa sy
 
 Si tiene acceso al código fuente de los tipos de datos a comparar, puede utilizar los atributos `PropertyMapAttribute` y `IgnoreForComparisonAttribute` para refinar la operación de comparación.  El primero puede usarse para mapear una propiedad a otra de nombre arbitrario en otro tipo de datos, y puede agregarse tantos de estos atributos como tipos de datos a comparar tenga; o puede usarlo para ignorar una propiedad cuando ses compara contra un tipo de datos particular.  El segundo atributo solamente se usa para configurar cómo se ignora una propiedad y es usado si no se tiene un tipo de datos de destino específico en mente, o si por alguna razón el tipo de datos de destino es el mismo tipo de datos (comparación de objetos del mismo tipo).
 
-**NOTA**:  Si no tiene acceso al código fuente de los tipos de datos a comparar, vea [sintaxis fluida de configuración](#sintaxis-fluida-de-configuracion) abajo, pero asegúrese de entender los atributos explicados aquí ya que la explicación es básicamente lo mismo para la contraparte en sintaxis fluida de configuración.
+**NOTA**:  Si no tiene acceso al código fuente de los tipos de datos a comparar, vea [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración) abajo, pero asegúrese de entender los atributos explicados aquí ya que la explicación es básicamente lo mismo para la contraparte en sintaxis fluida de configuración.
 
 ```c#
 public class MyModel
@@ -333,6 +333,7 @@ public void AglunOnStartOMainOAlgunOtroLugarAdecuado()
     Scanner.ScanAssembly(Assembly.GetExecutingAssembly());
 }
 ```
+
 #### Paso 2:  Creando el Objeto Comparador
 
 Una vez que se han escaneado los tipos de datos, ya es posible crear objetos comparadores para estos tipos.
@@ -355,7 +356,7 @@ ObjectComparer oc = ObjectComparer.Create<MyModel, MyModelVM>();
 ObjectComparer oc = ObjectComparer.Create<MyModel>();
 ```
 
-La tercera forma es vía [sintaxis fluida de configuración](#sintaxis-fluida-de-configuracion).
+La tercera forma es vía [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración).
 
 #### Todos los Pasos:  Poniendo Todo Junto
 
