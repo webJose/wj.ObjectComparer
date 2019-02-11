@@ -6,7 +6,7 @@
 
 With this library any developer can easily compare objects of the same class or objects of entirely different classes on a property-by-property basis.
 
-The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using fluent configuration syntax.
+The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using [fluent configuration syntax](#fluent-configuration-syntax).
 
 There are two major areas where such a comparer is useful:  Unit testing of object mappers, and applications that rely heavily on data modeling.  It can be used to quickly determine changes between versions of a data record, or taking decisions about the differences in data between a model and a corresponding ViewModel, for instance.
 
@@ -21,7 +21,7 @@ Follow these simple steps:
 1. Register (or scan) the data types that will be involved in property-by-property comparison.
 2. Create an object comparer object for the object types to be compared.  The order is important, so choose wisely.
 3. Using the comparer object from #2 above, run any of the `Compare()` methods and capture the result.
-4. If you call any of the overloads that return a collection, you can now examine the individual property results.
+4. If you called any of the overloads that return a collection, you can now examine the individual property results.
 
 #### Step 1:  Registering a Data Type
 
@@ -34,17 +34,20 @@ public void SomeOnStartOrMainOrSomeOtherAppropriatePlace()
 }
 ```
 
-So I may have lied.  This is not *really* necessary.  If you use fluent configuration syntax, the type is automatically scanned.  However, the current implementation will not cache the result, so every time a new comparer configuration object is created via the `ComparerConfigurator.Configure()` method, the type will be scanned.  It will be an unnecessary performance hit.  So it is always best to scan a type as shown above because while fluent configuration does not update the scanner's cache, it does consult this cache.
+So I may have lied.  This is not *really* necessary.  If you use [fluent configuration syntax](#fluent-configuration-syntax), the type is automatically scanned.  However, the current implementation will not cache the result, so every time a new comparer configuration object is created via the `ComparerConfigurator.Configure()` method, the type will be scanned.  It will be an unnecessary performance hit.  So it is always best to scan a type as shown above because while fluent configuration does not update the scanner's cache, it does consult this cache.
 
 If you have access to the source code of the data types that will be compared, you may use the `PropertyMapAttribute` and `IgnoreForComparisonAttribute` attributes to fine tune object comparison.  The former can be used to map a property to another of an arbitrary name and type in a target type, and you can add as many of these attributes as target types you have; or you can use it to ignore a property when comparing against a target type.  The latter attribute is only for configuring how to ignore a property and it is used if no specific target type comes to mind, or if for some reason the target type is the data type that contains the property (same data type object comparison).
 
-**NOTE**:  If you do not have access to the source code of the data types that will be compared, see [fluent syntax configuration](#fluent-syntax-configuration) below, but make sure you understand the attributes explained here, as their explanation is pretty much the same for the fluent syntax counterparts.
+**NOTE**:  If you do not have access to the source code of the data types that will be compared, see [fluent syntax configuration](#fluent-syntax-configuration) below.  It provides a `MapProperty()` method and a `IgnoreProperty()` method as counterparts of the aforementioned attributes.
 
 ```c#
 public class MyModel
 {
+    //Multiple property maps:
     //Map MyModel.Id to MyModelVM.ModelId.
     [PropertyMap(typeof(MyModelVM, PropertyMapOptions.MapToProperty, nameof(MyModelVM.ModelId)))]
+    //Map MyModel.Id to SomeModel.PreviousId.
+    [PropertyMap(typeof(SomeModel, PropertyMapOptions.MapToProperty, nameof(SomeModel.PreviousId)))]
     public long Id { get; set; }
 
     //Ignore property RowVersion when comparing against MyModelVM.
@@ -67,7 +70,7 @@ public class MyModel
 
 **NOTE:**  Property maps are *not* bidirectional.  Just because in the example above a map exists like so MyModel.Id -> MyModelVM.ModelId, the reverse is not true.  There is no automatic mapping the other way around (MyModelVM.ModelId -> MyModel.Id).
 
-If you have many data types to scan, it could be better to mark them with the `ScanForPropertyComparisonAttribute` attribute and tell the scanner to scan the assembly(ies) that contains the data types instead of registering the types one by one.
+If you have many data types to scan, it could be better to mark them with the `ScanForPropertyComparisonAttribute` attribute and tell the scanner to scan the assembly(ies) that contain(s) the data types instead of registering the types one by one.
 
 ```c#
 [ScanForPropertyComparison]
@@ -250,11 +253,11 @@ For more information and advanced usage, refer to the wiki (coming soon).
 
 [English](#English)
 
-Con esta biblioteca cualquier desarrollador puede fácilmente comparqar objetos de la misma clase u objetos de clases completamente diferentes propiedad por propiedad.
+Con esta biblioteca cualquier desarrollador puede fácilmente comparar objetos de la misma clase u objetos de clases completamente diferentes propiedad por propiedad.
 
-La funcionalidad más básica se basa en nombres de propiedades:  Propiedades en los objetos son pareadas unas con otras si su nombre es igual.  El mapeo (pareo) es sensible a las mayúsculas.  Sin embargo esta biblioteca permite el mapeo personalizado a través del atributo `PropertyMapAttribute` o utilizando la sintaxis fluida de configuración.
+La funcionalidad más básica se basa en nombres de propiedades:  Propiedades en los objetos son pareadas unas con otras si su nombre es igual.  El mapeo (pareo) es sensible a las mayúsculas.  Sin embargo esta biblioteca permite el mapeo personalizado a través del atributo `PropertyMapAttribute` o utilizando la [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración).
 
-Existen dos áreas principales donde un comparador así es útil:  Pruebas unitarias de objetos mapeadores, y aplicaciones que utilizan mucho modelos de datos.  Puede usarse para determinar rápidamente cambios entre versiones de un registro, o tomar decisiones acerda de las diferencias en datos entre un modelo y su correspondiente modelo-vista, por ejemplo.
+Existen dos áreas principales donde un comparador así es útil:  Pruebas unitarias de objetos mapeadores, y aplicaciones que dependen fuertemente de modelos de datos.  Puede usarse para determinar rápidamente cambios entre versiones de un registro, o tomar decisiones acerca de las diferencias en datos entre un modelo y su correspondiente modelo-vista, por ejemplo.
 
 ### Cómo Instalar
 
@@ -267,7 +270,7 @@ Siga estos simples pasos:
 1. Registre (o escanee) los tipos de datos involucrados en la comparación propiedad por propiedad.
 2. Cree un objeto comparador para los tipos de objetos a comparar.  El orden es importante así que escoja sabiamente.
 3. Usando el comparador de objetos ejecute cualquiera de las sobrecargas del método `Compare()`.
-4. Si utiliza una sobrecarga que devuelve una colección, podrá en este punto examinar individualmente los resultados de cada propiedad.
+4. Si utilizó una sobrecarga que devuelve una colección, podrá en este punto examinar individualmente los resultados de cada propiedad.
 
 #### Paso 1:  Registrar un Tipo de Datos
 
@@ -280,17 +283,20 @@ public void AglunOnStartOMainOAlgunOtroLugarAdecuado()
 }
 ```
 
-Ok, puede ser que haya mentido.  Esto no es *realmente* necesario.  Si se usa syntaxis fluida de configuración, el tipo de datos es escaneado automáticamente.  Sin embargo, la implementación actual no guarda el resutlado, así que cada vez que se cree un nuevo objeto de configuración vía el método `ComparerConfigurator.Configure()`, el tipo será escaneado.  Esto será una carga al desempeño innecesaria.  Por lo tanto siempre es mejor escanear un tipo como se muestra arriba porque si bien es cierto que la sintaxis fluida de configuración no actualiza el caché de tipos del escáner, ciertamente sí lo consulta.
+Ok, puede ser que haya mentido.  Esto no es *realmente* necesario.  Si se usa [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración), el tipo de datos es escaneado automáticamente.  Sin embargo, la implementación actual no guarda el resutlado, así que cada vez que se cree un nuevo objeto de configuración vía el método `ComparerConfigurator.Configure()`, el tipo será escaneado.  Esto será una carga al desempeño innecesaria.  Por lo tanto siempre es mejor escanear un tipo como se muestra arriba porque si bien es cierto que la sintaxis fluida de configuración no actualiza el caché de tipos del escáner, ciertamente sí lo consulta.
 
-Si tiene acceso al código fuente de los tipos de datos a comparar, puede utilizar los atributos `PropertyMapAttribute` y `IgnoreForComparisonAttribute` para refinar la operación de comparación.  El primero puede usarse para mapear una propiedad a otra de nombre arbitrario en otro tipo de datos, y puede agregarse tantos de estos atributos como tipos de datos a comparar tenga; o puede usarlo para ignorar una propiedad cuando ses compara contra un tipo de datos particular.  El segundo atributo solamente se usa para configurar cómo se ignora una propiedad y es usado si no se tiene un tipo de datos de destino específico en mente, o si por alguna razón el tipo de datos de destino es el mismo tipo de datos (comparación de objetos del mismo tipo).
+Si tiene acceso al código fuente de los tipos de datos a comparar, puede utilizar los atributos `PropertyMapAttribute` e `IgnoreForComparisonAttribute` para refinar la operación de comparación.  El primero puede usarse para mapear una propiedad a otra de nombre arbitrario en otro tipo de datos, y puede agregarse tantos de estos atributos como tipos de datos a comparar tenga; o puede usarlo para ignorar una propiedad cuando se compara contra un tipo de datos particular.  El segundo atributo solamente se usa para configurar cómo se ignora una propiedad y es usado si no se tiene un tipo de datos de destino específico en mente, o si por alguna razón el tipo de datos de destino es el mismo tipo de datos (comparación de objetos del mismo tipo).
 
-**NOTA**:  Si no tiene acceso al código fuente de los tipos de datos a comparar, vea [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración) abajo, pero asegúrese de entender los atributos explicados aquí ya que la explicación es básicamente lo mismo para la contraparte en sintaxis fluida de configuración.
+**NOTA**:  Si no tiene acceso al código fuente de los tipos de datos a comparar, vea [sintaxis fluida de configuración](#sintaxis-fluida-de-configuración) abajo.  Se proveen los métodos `MapProperty()` e `IgnoreProperty()` como contrapartes de los atributos arriba mencionados.
 
 ```c#
 public class MyModel
 {
+    //Múltiples mapeos de propiedad:
     //Mapeo de MyModel.Id a MyModelVM.ModelId.
     [PropertyMap(typeof(MyModelVM, PropertyMapOptions.MapToProperty, nameof(MyModelVM.ModelId)))]
+    //Mapeo de MyModel.Id a SomeModel.PreviousId.
+    [PropertyMap(typeof(SomeModel, PropertyMapOptions.MapToProperty, nameof(SomeModel.PreviousId)))]
     public long Id { get; set; }
 
     //Ignorar propiedad RowVersion cuando se compara contra MyModelVM.
@@ -313,7 +319,7 @@ public class MyModel
 
 **NOTA**:  Los mapas de propiedades *no* son bidireccionales.  Solamente porque en el ejemplo existe un mapeo de MyModel.Id -> MyModelVM.ModelId, el opuesto no es cierto.  No hay mapeo automático a la inversa (MyModelVM.ModelId -> MyModel.Id).
 
-Si tiene muchos tipos de datos a escanear, podría ser mejor markarles con el atributo `ScanForPropertyComparisonAttribute` y pedirle al escáner que escanee el(los) ensamblado(s) que contiene los tipos de datos en vez de registrar los tipos uno por uno.
+Si tiene muchos tipos de datos a escanear, podría ser mejor marcarles con el atributo `ScanForPropertyComparisonAttribute` y pedirle al escáner que escanee el(los) ensamblado(s) que contiene(n) los tipos de datos en vez de registrar los tipos uno por uno.
 
 ```c#
 [ScanForPropertyComparison]
@@ -403,9 +409,9 @@ else if (pcr.Result != ComparisonResult.Equal)
 
 ### Sintaxis Fluida de Configuración
 
-El Inicio Rápido explica una manera simple, flexible y eficiente de configurar y usar objetos comparadores.  Sin embargo, el proceso de personalización depende de atributos y la habilidad de agregarlos a un tipo de datos.  Si el código fuente del tipo de dato no puede ser modificado, la utilidad de esta biblioteca se ve disminuido.
+El Inicio Rápido explica una manera simple, flexible y eficiente de configurar y usar objetos comparadores.  Sin embargo, el proceso de personalización depende de atributos y la habilidad de agregarlos a un tipo de datos.  Si el código fuente del tipo de dato no puede ser modificado, la utilidad de esta biblioteca se ve disminuida.
 
-Sintaxis Fluida de Configuración resuelve este problema.  Es un objeto de configuración que puede acumular la misma información provista por los atributos `PropertyMapAttribute` y `IgnoreForComparisonAttribute` y pasarla a un objeto comparador.  Esta es la tercera manera de crear un objeto comparador:  Crear un objeto de configuración, configurarlo y luego solicitarle un nuevo objeto comparador.
+Sintaxis Fluida de Configuración resuelve este problema.  Es un objeto de configuración que puede acumular la misma información provista por los atributos `PropertyMapAttribute` e `IgnoreForComparisonAttribute` y pasarla a un objeto comparador.  Esta es la tercera manera de crear un objeto comparador:  Crear un objeto de configuración, configurarlo y luego solicitarle un nuevo objeto comparador.
 
 Por simplicidad, no es requerido que los tipos de datos sean pre-registrados, pero si lo están, su aplicación desempeñará mejor.
 
@@ -422,12 +428,12 @@ Ahora la variable `config` puede usarse para mapear o ignorar propiedades, y eve
 
 ```c#
 config
-    //Map a property to another property.
+    //Mapear una propiedad a otra.
     .MapProperty(src => src.Id, dst => dst.ModelId)
-    //Ignore a property.
+    //Ignorar una propiedad.
     .IgnoreProperty(src => src.RowVersion);
 
-//Create the comparer.
+//Crear el comparador.
 ObjectComparer oc = config.CreateComparer();
 ```
 

@@ -7,7 +7,7 @@ namespace wj.ObjectComparer
     /// order to compare the property values of objects of that type with the property values of 
     /// another object, usually of another type.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     public class ScanForPropertyComparisonAttribute : Attribute
     {
         #region Properties
