@@ -178,7 +178,7 @@ namespace wj.ObjectComparer.Tests
             Person p1 = ModelsHelper.CreatePerson();
             PersonEx p2 = ModelsHelper.CreatePersonEx();
             var config = ComparerConfigurator.Configure<Person, PersonEx>()
-                .IgnoreProperty(src => src.Email, typeof(PersonEx));
+                .IgnoreProperty(src => src.Email);
             ObjectComparer comparer = config.CreateComparer();
 
             //Act.
@@ -195,29 +195,6 @@ namespace wj.ObjectComparer.Tests
         }
 
         [Test]
-        [Description("Makes sure ignored properties are ignored when ignored for all types.")]
-        public void PropertyIsIgnoredForAllTypes()
-        {
-            //Arrange.
-            Person p1 = ModelsHelper.CreatePerson();
-            PersonEx p2 = ModelsHelper.CreatePersonEx();
-            var config = ComparerConfigurator.Configure<Person, PersonEx>()
-                .IgnoreProperty(src => src.Email, IgnorePropertyOptions.IgnoreForAll);
-            ObjectComparer comparer = config.CreateComparer();
-
-            //Act.
-            var result = comparer.Compare(p1, p2, out bool _);
-
-            //Assert.
-            result.Should().NotBeNull();
-            PropertyComparisonResult pcr = result[nameof(Person.Email)];
-            pcr.Should().NotBeNull();
-            pcr.Result.Should().Be(ComparisonResult.PropertyIgnored);
-            pcr.MapUsed.Should().BeNull();
-            pcr.Property1.IgnoreProperty.Should().Be(IgnorePropertyOptions.IgnoreForAll);
-        }
-
-        [Test]
         [Description("Makes sure an ignored property does not affect the overall isDifferent Boolean result.")]
         public void IgnoredPropertyDoesNotResultInDifferent()
         {
@@ -226,7 +203,7 @@ namespace wj.ObjectComparer.Tests
             Person p2 = ModelsHelper.CreatePerson();
             p2.Id = p1.Id + 1;
             var config = ComparerConfigurator.Configure<Person>()
-                .IgnoreProperty(src => src.Id, IgnorePropertyOptions.IgnoreForSelf);
+                .IgnoreProperty(src => src.Id);
             ObjectComparer comparer = config.CreateComparer();
 
             //Act.

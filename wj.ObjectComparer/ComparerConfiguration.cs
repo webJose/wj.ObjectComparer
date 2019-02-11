@@ -148,39 +148,14 @@ namespace wj.ObjectComparer
 
         /// <summary>
         /// Configures the property comparison information of the source property to ignore the 
-        /// specified property during the comparison routine, either for a specific type, for all 
-        /// other data types, for its own data type, or for all data types (including its own data 
-        /// type).
+        /// specified property during the comparison routine against objects of type 
+        /// <see cref="TDestination"/>.
         /// </summary>
         /// <typeparam name="TSourceProperty">The type of the source property.</typeparam>
         /// <param name="sourcePropExpr">Source property lambda expression.</param>
-        /// <param name="ignoreOptions">Ignore options that determine if the setting should apply 
-        /// to its own data type only, to all other data types, or both.</param>
         /// <returns>This configuration object to enable fluent syntax.</returns>
         public ComparerConfiguration<TSource, TDestination> IgnoreProperty<TSourceProperty>(
-            Expression<Func<TSource, TSourceProperty>> sourcePropExpr,
-            IgnorePropertyOptions ignoreOptions = IgnorePropertyOptions.IgnoreForOthers
-        )
-        {
-            PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
-            PropertyComparisonInfo pci = TypeInfo1.Properties[piSource.Name];
-            pci.IgnoreProperty = ignoreOptions;
-            return this;
-        }
-
-        /// <summary>
-        /// Configures the property comparison information of the source property to ignore the 
-        /// specified property during the comparison routine, either for a specific type, for all 
-        /// other data types, for its own data type, or for all data types (including its own data 
-        /// type).
-        /// </summary>
-        /// <typeparam name="TSourceProperty">The type of the source property.</typeparam>
-        /// <param name="sourcePropExpr">Source property lambda expression.</param>
-        /// <param name="targetType">The target type this ignore setting applies to.</param>
-        /// <returns>This configuration object to enable fluent syntax.</returns>
-        public ComparerConfiguration<TSource, TDestination> IgnoreProperty<TSourceProperty>(
-            Expression<Func<TSource, TSourceProperty>> sourcePropExpr,
-            Type targetType
+            Expression<Func<TSource, TSourceProperty>> sourcePropExpr
         )
         {
             PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
