@@ -6,7 +6,7 @@
 
 With this library any developer can easily compare objects of the same class or objects of entirely different classes on a property-by-property basis.
 
-The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using [fluent configuration syntax](#fluent-configuration-syntax).
+The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using [fluent syntax configuration](#fluent-syntax-configuration).
 
 There are two major areas where such a comparer is useful:  Unit testing of object mappers, and applications that rely heavily on data modeling.  It can be used to quickly determine changes between versions of a data record, or taking decisions about the differences in data between a model and a corresponding ViewModel, for instance.
 
@@ -34,7 +34,7 @@ public void SomeOnStartOrMainOrSomeOtherAppropriatePlace()
 }
 ```
 
-So I may have lied.  This is not *really* necessary.  If you use [fluent configuration syntax](#fluent-configuration-syntax), the type is automatically scanned.  However, the current implementation will not cache the result, so every time a new comparer configuration object is created via the `ComparerConfigurator.Configure()` method, the type will be scanned.  It will be an unnecessary performance hit.  So it is always best to scan a type as shown above because while fluent configuration does not update the scanner's cache, it does consult this cache.
+So I may have lied.  This is not *really* necessary.  If you use [fluent syntax configuration](#fluent-syntax-configuration), the type is automatically scanned.  However, the current implementation will not cache the result, so every time a new comparer configuration object is created via the `ComparerConfigurator.Configure()` method, the type will be scanned.  It will be an unnecessary performance hit.  So it is always best to scan a type as shown above because while fluent configuration does not update the scanner's cache, it does consult this cache.
 
 If you have access to the source code of the data types that will be compared, you may use the `PropertyMapAttribute` and `IgnoreForComparisonAttribute` attributes to fine tune object comparison.  The former can be used to map a property to another of an arbitrary name and type in a target type, and you can add as many of these attributes as target types you have; or you can use it to ignore a property when comparing against a target type.  The latter attribute is only for configuring how to ignore a property and it is used if no specific target type comes to mind, or if for some reason the target type is the data type that contains the property (same data type object comparison).
 
