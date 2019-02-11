@@ -70,13 +70,13 @@ namespace wj.ObjectComparer
         private TypeInfo GetTypeInformation(Type type, bool ignoreAttributedPropertyMappings)
         {
             bool exists = Scanner.TryGetTypeInformation(type, out TypeInfo ti);
-            if (!exists || ti.PropertyMapsIgnored != ignoreAttributedPropertyMappings)
+            if (!exists || (ti.PropertyMapsIgnored != ignoreAttributedPropertyMappings && !ignoreAttributedPropertyMappings))
             {
                 ti = Scanner.BuildTypeInformation(type, ignoreAttributedPropertyMappings);
             }
-            else if (ti.PropertyMapsIgnored == ignoreAttributedPropertyMappings)
+            else if (exists)
             {
-                ti = ti.Clone();
+                ti = ti.Clone(!ignoreAttributedPropertyMappings);
             }
             return ti;
         }

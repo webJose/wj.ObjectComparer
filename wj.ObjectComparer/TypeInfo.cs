@@ -44,14 +44,16 @@ namespace wj.ObjectComparer
         /// <summary>
         /// Creates a copy of this object.
         /// </summary>
+        /// <param name="clonePropertyMaps">A Boolean value that indicates if property maps should 
+        /// be cloned as well.</param>
         /// <returns>A type information object that contains the same information as this object.</returns>
-        internal TypeInfo Clone()
+        internal TypeInfo Clone(bool clonePropertyMaps)
         {
             TypeInfo ti = new TypeInfo(DataType, PropertyMapsIgnored);
             foreach (PropertyComparisonInfo pci in Properties)
             {
                 PropertyComparisonInfo newPci = new PropertyComparisonInfo(pci.PropertyDescriptor, pci.IgnoreProperty);
-                if (!PropertyMapsIgnored && pci.Maps.Count > 0)
+                if (!PropertyMapsIgnored && pci.Maps.Count > 0 && clonePropertyMaps)
                 {
                     foreach(PropertyMap pm in pci.Maps)
                     {
