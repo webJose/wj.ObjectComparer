@@ -18,7 +18,7 @@ In the case of .Net Framework v4.6.1 or later, this library supports the use of 
 
 ### How to Install
 
-The simplest way is via NuGet.  The package is published @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  If not, then the source code can be compiled and the resulting DLL file can be referenced directly, or you can download a zip file from the [releases](releases) page containing the compiled DLL.
+The simplest way is via NuGet.  The package is published @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  If not, then the source code can be compiled and the resulting DLL file can be referenced directly, or you can download a zip file from the [releases](../../releases) page containing the compiled DLL.
 
 ### Quickstart
 
@@ -411,7 +411,7 @@ En el caso de .Net Framework v4.6.1 o superior, esta biblioteca soporta el uso d
 
 ### Cómo Instalar
 
-La forma más simple es vía NuGet.  El paquete está publicado @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  Si no, entonces el código fuente puede compilarse y referenciar el DLL resultante, o bien puede descargar el archivo zip desde la página de [releases](releases) que contiene el DLL compilado.
+La forma más simple es vía NuGet.  El paquete está publicado @ [wj.ObjectComparer](https://www.nuget.org/packages/wj.ObjectComparer).  Si no, entonces el código fuente puede compilarse y referenciar el DLL resultante, o bien puede descargar el archivo zip desde la página de [releases](../../releases) que contiene el DLL compilado.
 
 ### Inicio Rápido
 
