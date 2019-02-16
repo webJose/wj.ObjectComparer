@@ -51,10 +51,10 @@ namespace wj.ObjectComparer.Tests
             return p;
         }
 
-        public static PersonEx2 CreatePersonEx2()
+        public static PersonEx2 CreatePersonEx2(bool nullDate = false)
         {
             PersonEx2 p = CreatePersonCore<PersonEx2>();
-            p.BirthDate = DateTime.Now.AddYears(-21);
+            p.BirthDate = nullDate ? (DateTime?)null : DateTime.Now.AddYears(-21);
             return p;
         }
 
@@ -62,6 +62,56 @@ namespace wj.ObjectComparer.Tests
         {
             PersonExWithPropMapIgnore p = CreatePersonCore<PersonExWithPropMapIgnore>();
             p.NewNickName = "Ignored Joe";
+            return p;
+        }
+
+        public static PersonExWithIgnoreForSelf CreatePersonExWithIgnoreForSelf()
+        {
+            PersonExWithIgnoreForSelf p = CreatePersonCore<PersonExWithIgnoreForSelf>();
+            p.NickName = "IgnoredForSelf boy";
+            return p;
+        }
+
+        public static PersonExWithIgnore CreatePersonExWithIgnore()
+        {
+            PersonExWithIgnore p = CreatePersonCore<PersonExWithIgnore>();
+            p.NickName = "Ignored Jane";
+            return p;
+        }
+
+
+        public static PersonExWithIgnoreForOthers CreatePersonExWithIgnoreForOthers()
+        {
+            PersonExWithIgnoreForOthers p = CreatePersonCore<PersonExWithIgnoreForOthers>();
+            p.NickName = "Racist Menace";
+            return p;
+        }
+
+        public static PersonExWithStringCoerce CreatePersonExWithStringCoerce(bool nullDate = false)
+        {
+            PersonExWithStringCoerce p = CreatePersonCore<PersonExWithStringCoerce>();
+            p.DateOfBirth = nullDate ? (DateTime?)null : DateTime.Now.AddYears(-21);
+            return p;
+        }
+
+        public static PersonEx2WithPropertyMap CreatePersonEx2WithPropertyMap(bool nullDate = false)
+        {
+            PersonEx2WithPropertyMap p = CreatePersonCore<PersonEx2WithPropertyMap>();
+            p.DateOfBirth = nullDate ? (DateTime?)null : DateTime.Now.AddYears(-21);
+            return p;
+        }
+
+        public static PersonEx2NonNullable CreatePersonEx2NonNullable()
+        {
+            PersonEx2NonNullable p = CreatePersonCore<PersonEx2NonNullable>();
+            p.BirthDate = DateTime.Now.AddYears(-21);
+            return p;
+        }
+
+        public static PersonEx2StringDate CreatePersonEx2StringDate()
+        {
+            PersonEx2StringDate p = CreatePersonCore<PersonEx2StringDate>();
+            p.BirthDate = DateTime.Now.AddYears(-21).ToShortDateString();
             return p;
         }
         #endregion

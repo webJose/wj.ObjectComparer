@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace wj.ObjectComparer
 {
@@ -25,6 +26,7 @@ namespace wj.ObjectComparer
         TValue IDictionary<TKey, TValue>.this[TKey key]
         {
             get => this[key];
+            [ExcludeFromCodeCoverage]
             set
             {
                 if (Contains(key))
@@ -39,6 +41,7 @@ namespace wj.ObjectComparer
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public ICollection<TKey> Keys
         {
             get
@@ -64,6 +67,7 @@ namespace wj.ObjectComparer
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public bool IsReadOnly => false;
 
         /// <inheritdoc />
@@ -73,18 +77,22 @@ namespace wj.ObjectComparer
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public void Add(KeyValuePair<TKey, TValue> item)
         {
             Add(item.Value);
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public bool Contains(KeyValuePair<TKey, TValue> item) => Contains(item.Key);
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public bool ContainsKey(TKey key) => Contains(key);
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             for (int i = 0; i < Count; ++i)
@@ -95,12 +103,14 @@ namespace wj.ObjectComparer
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public bool Remove(KeyValuePair<TKey, TValue> item)
         {
             return Remove(item.Key);
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         public bool TryGetValue(TKey key, out TValue value)
         {
             value = default(TValue);
@@ -113,6 +123,7 @@ namespace wj.ObjectComparer
         }
 
         /// <inheritdoc />
+        [ExcludeFromCodeCoverage]
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
             foreach (TValue item in this)

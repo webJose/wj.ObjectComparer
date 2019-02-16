@@ -16,8 +16,17 @@ namespace wj.ObjectComparer.Tests
             typeof(Person),
             typeof(PersonEx),
             typeof(PersonByRefUdt),
-            typeof(PersonByValUdt)
+            typeof(PersonByValUdt),
+            typeof(PersonExWithIgnore),
+            typeof(PersonExWithIgnoreForSelf),
+            typeof(PersonExWithIgnoreForOthers),
+            typeof(PersonExWithStringCoerce),
+            typeof(PersonEx2),
+            typeof(PersonEx2WithPropertyMap),
+            typeof(PersonEx2NonNullable),
+            typeof(PersonEx2StringDate)
         };
+
         [OneTimeSetUp]
         public void ModelRegistration()
         {
@@ -121,6 +130,47 @@ namespace wj.ObjectComparer.Tests
                 },
                 ComparisonResult.NotEqual | ComparisonResult.NoComparer
             ).SetName($"{rootName} (0, 1)");
+        }
+
+        private static IEnumerable IgnoreForComparisonAttributeIgnoreForOthersTestData()
+        {
+            string rootName = nameof(IgnoreForComparisonAttributeIgnoreForOthers);
+            yield return new TestCaseData(typeof(PersonExWithIgnore), ModelsHelper.CreatePersonExWithIgnore())
+                .SetName($"{rootName} {nameof(IgnorePropertyOptions.IgnoreForAll)}");
+            yield return new TestCaseData(typeof(PersonExWithIgnoreForOthers), ModelsHelper.CreatePersonExWithIgnoreForOthers())
+                .SetName($"{rootName} {nameof(IgnorePropertyOptions.IgnoreForOthers)}");
+        }
+
+        private static IEnumerable CompareCoercesToStringOnAttributedDemandTestData()
+        {
+            string rootName = nameof(CompareCoercesToStringOnAttributedDemand);
+            yield return new TestCaseData(true, true).SetName($"{rootName} (null, null)");
+            yield return new TestCaseData(true, false).SetName($"{rootName} (null, date)");
+            yield return new TestCaseData(false, true).SetName($"{rootName} (date, null)");
+            yield return new TestCaseData(false, false).SetName($"{rootName} (date, date)");
+        }
+
+        private static IEnumerable CompareNullablePropertiesSameTypeTestData()
+        {
+            string rootName = nameof(CompareNullablePropertiesSameType);
+            yield return new TestCaseData(true, true).SetName($"{rootName} (null, null)");
+            yield return new TestCaseData(true, false).SetName($"{rootName} (null, date)");
+            yield return new TestCaseData(false, true).SetName($"{rootName} (date, null)");
+            yield return new TestCaseData(false, false).SetName($"{rootName} (date, date)");
+        }
+
+        private static IEnumerable CompareNullableToNonNullableSameBaseTypeTestData()
+        {
+            string rootName = nameof(CompareNullableToNonNullableSameBaseType);
+            yield return new TestCaseData(false).SetName($"{rootName} Date");
+            yield return new TestCaseData(true).SetName($"{rootName} Null");
+        }
+
+        private static IEnumerable CompareNonNullableToNullableSameBaseTypeTestData()
+        {
+            string rootName = nameof(CompareNonNullableToNullableSameBaseType);
+            yield return new TestCaseData(false).SetName($"{rootName} Date");
+            yield return new TestCaseData(true).SetName($"{rootName} Null");
         }
         #endregion
 
@@ -349,6 +399,144 @@ namespace wj.ObjectComparer.Tests
             r.Result.Should().Be(ComparisonResult.Exception);
             r.Exception.Should().NotBeNull();
             r.Exception.Should().BeOfType<InvalidOperationException>();
+        }
+
+        [Test]
+        [Description("Makes sure ignored properties via the IgnoreForComparisonAttribute attribute " +
+            "are properly ignored when ignored for self.")]
+        public void IgnoreForComparisonAttributeIgnoreForSelf()
+        {
+            //Arrange.
+            PersonExWithIgnoreForSelf p1 = ModelsHelper.CreatePersonExWithIgnoreForSelf();
+            PersonExWithIgnoreForSelf p2 = ModelsHelper.CreatePersonExWithIgnoreForSelf();
+            ObjectComparer comparer = ObjectComparer.Create<PersonExWithIgnoreForSelf>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propertyResult = result[nameof(PersonExWithIgnoreForSelf.NickName)];
+            propertyResult.Should().NotBeNull();
+            propertyResult.Result.Should().Be(ComparisonResult.PropertyIgnored);
+        }
+
+        [Test]
+        [Description("Makes sure ignored properties via the IgnoreForComparisonAttribute attribute " +
+            "are properly ignored when ignored for others.")]
+        [TestCaseSource(nameof(IgnoreForComparisonAttributeIgnoreForOthersTestData))]
+        public void IgnoreForComparisonAttributeIgnoreForOthers(Type p1Type, Person p1)
+        {
+            //Arrange.
+            PersonEx p2 = ModelsHelper.CreatePersonEx();
+            ObjectComparer comparer = new ObjectComparer(p1Type, typeof(PersonEx));
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult proprtyResult = result[nameof(PersonExWithIgnore.NickName)];
+            proprtyResult.Should().NotBeNull();
+            proprtyResult.Result.Should().Be(ComparisonResult.PropertyIgnored);
+        }
+
+        [Test]
+        [Description("Makes sure string coercion is enforced via attributed configuration.")]
+        [TestCaseSource(nameof(CompareCoercesToStringOnAttributedDemandTestData))]
+        public void CompareCoercesToStringOnAttributedDemand(bool date1Null, bool date2Null)
+        {
+            //Arrange.
+            PersonExWithStringCoerce p1 = ModelsHelper.CreatePersonExWithStringCoerce(date1Null);
+            PersonEx2 p2 = ModelsHelper.CreatePersonEx2(date2Null);
+            ObjectComparer comparer = ObjectComparer.Create<PersonExWithStringCoerce, PersonEx2>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propResult = result[nameof(PersonExWithStringCoerce.DateOfBirth)];
+            propResult.Should().NotBeNull();
+            (propResult.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.StringCoercion);
+        }
+
+        [Test]
+        [Description("Makes sure nullable data types are compared appropiately.")]
+        [TestCaseSource(nameof(CompareNullablePropertiesSameTypeTestData))]
+        public void CompareNullablePropertiesSameType(bool date1Null, bool date2Null)
+        {
+            //Arrange.
+            PersonEx2WithPropertyMap p1 = ModelsHelper.CreatePersonEx2WithPropertyMap(date1Null);
+            PersonEx2 p2 = ModelsHelper.CreatePersonEx2(date2Null);
+            ObjectComparer comparer = ObjectComparer.Create<PersonEx2WithPropertyMap, PersonEx2>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propResult = result[nameof(PersonEx2WithPropertyMap.DateOfBirth)];
+            propResult.Should().NotBeNull();
+        }
+
+        [Test]
+        [Description("Makes sure a property of type T? compares appropriately against one of type T.")]
+        [TestCaseSource(nameof(CompareNullableToNonNullableSameBaseTypeTestData))]
+        public void CompareNullableToNonNullableSameBaseType(bool nullDate)
+        {
+            //Arrange.
+            PersonEx2 p1 = ModelsHelper.CreatePersonEx2(nullDate);
+            PersonEx2NonNullable p2 = ModelsHelper.CreatePersonEx2NonNullable();
+            ObjectComparer comparer = ObjectComparer.Create<PersonEx2, PersonEx2NonNullable>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propResult = result[nameof(PersonEx2NonNullable.BirthDate)];
+            propResult.Should().NotBeNull();
+            (propResult.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.Undefined, "Comparison without coercion is possible.");
+        }
+
+        [Test]
+        [Description("Makes sure a property of type T compares appropriately against one of type T?.")]
+        [TestCaseSource(nameof(CompareNonNullableToNullableSameBaseTypeTestData))]
+        public void CompareNonNullableToNullableSameBaseType(bool nullDate)
+        {
+            //Arrange.
+            PersonEx2NonNullable p1 = ModelsHelper.CreatePersonEx2NonNullable();
+            PersonEx2 p2 = ModelsHelper.CreatePersonEx2(nullDate);
+            ObjectComparer comparer = ObjectComparer.Create<PersonEx2NonNullable, PersonEx2>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propResult = result[nameof(PersonEx2.BirthDate)];
+            propResult.Should().NotBeNull();
+            (propResult.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.Undefined, "Comparison without coercion is possible.");
+        }
+
+        [Test]
+        [Description("Makes sure string coercion happens automatically on property type mismatch.")]
+        public void CompareCoercesToStringOnPropertyTypeMismatch()
+        {
+            //Arrange.
+            PersonEx2 p1 = ModelsHelper.CreatePersonEx2();
+            PersonEx2StringDate p2 = ModelsHelper.CreatePersonEx2StringDate();
+            ObjectComparer comparer = ObjectComparer.Create<PersonEx2, PersonEx2StringDate>();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            result.Should().NotBeNull();
+            PropertyComparisonResult propResult = result[nameof(PersonEx2.BirthDate)];
+            propResult.Should().NotBeNull();
+            (propResult.Result & ComparisonResult.StringCoercion).Should().Be(ComparisonResult.StringCoercion);
         }
         #endregion
     }

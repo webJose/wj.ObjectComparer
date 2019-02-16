@@ -109,7 +109,7 @@ namespace wj.ObjectComparer
         /// <param name="value2">Value found in the property of the second object.</param>
         /// <param name="mappingUsed">Mapping information used during the comparison operation.</param>
         /// <param name="exception">Exception raised during the comparison operation, if any.</param>
-        public PropertyComparisonResult(ComparisonResult result, PropertyComparisonInfo property1, object value1,
+        internal PropertyComparisonResult(ComparisonResult result, PropertyComparisonInfo property1, object value1,
             PropertyComparisonInfo property2 = null, object value2 = null, PropertyMap mappingUsed = null,
             System.Exception exception = null)
         {

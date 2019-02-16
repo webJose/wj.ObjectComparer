@@ -23,7 +23,7 @@ namespace wj.ObjectComparer
         /// Use this object to synchronize access to <see cref="Scanner.TypeInformation"/> and 
         /// <see cref="Scanner._comparers"/>.
         /// </summary>
-        private static readonly object SyncRoot = new object();
+        internal static readonly object SyncRoot = new object();
 
         /// <summary>
         /// Type information to be used for property-by-property object comparison.  If a data 
@@ -91,6 +91,19 @@ namespace wj.ObjectComparer
                 bool exists = TypeInformation.Contains(type);
                 typeInfo = exists ? TypeInformation[type] : null;
                 return exists;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type information from the scanner's cache for the specified type.
+        /// </summary>
+        /// <param name="type">The type whose type information is wanted.</param>
+        /// <returns>The type information object matching the specified type.</returns>
+        private static TypeInfo GetTypeInformation(Type type)
+        {
+            lock (SyncRoot)
+            {
+                return TypeInformation[type];
             }
         }
 
@@ -199,6 +212,15 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
+        /// Registers a data type so it is ready for property-by-property object comparison.
+        /// </summary>
+        /// <typeparam name="TDataType">The data type to register.</typeparam>
+        public static void RegisterType<TDataType>()
+        {
+            RegisterType(typeof(TDataType));
+        }
+
+        /// <summary>
         /// Unregisters a data type from the global type registry.  Unregistered types can no 
         /// longer be used to create object comparers, but any previously-created comparers will 
         /// work.
@@ -216,6 +238,17 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
+        /// Unregisters a data type from the global type registry.  Unregistered types can no 
+        /// longer be used to create object comparers, but any previously-created comparers will 
+        /// work.
+        /// </summary>
+        /// <typeparam name="TDataType">The data type to unregister.</typeparam>
+        public static void UnregisterType<TDataType>()
+        {
+            UnregisterType(typeof(TDataType));
+        }
+
+        /// <summary>
         /// Scans a .Net assembly for types that have been marked with the 
         /// <see cref="ScanForPropertyComparisonAttribute"/> attribute.  These types are 
         /// registered for property-by-property comparison.
@@ -229,6 +262,29 @@ namespace wj.ObjectComparer
                 if ((addToScanner != null && !addToScanner.Scan) || addToScanner == null) continue;
                 RegisterType(type);
             }
+        }
+
+        /// <summary>
+        /// Returns a type configuration object to enable personalization of type information.  
+        /// The type may already be in the scanner's cache (it has been registered via the 
+        /// <see cref="Scanner.RegisterType(Type)"/> method or indirectly registered via the 
+        /// <see cref="Scanner.ScanAssembly(Assembly)"/> method), or not.  If the latter, then the 
+        /// type is automatically registered.
+        /// </summary>
+        /// <typeparam name="TData">The data type that will be configured.</typeparam>
+        /// <returns>A type configuration object for the specified data type.
+        /// Unlike comparer configuration, configuration made through this type configuration 
+        /// object persists in the scanner's cache and any object comparer objects created after 
+        /// configuration will take advantage of the new configuration made through this object.</returns>
+        public static TypeConfiguration<TData> ConfigureType<TData>()
+        {
+            Type type = typeof(TData);
+            if (!TryGetTypeInformation(type, out TypeInfo ti))
+            {
+                RegisterType(type);
+                ti = GetTypeInformation(type);
+            }
+            return new TypeConfiguration<TData>(ti);
         }
         #endregion
 

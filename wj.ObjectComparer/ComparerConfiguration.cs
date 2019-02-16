@@ -82,35 +82,12 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
-        /// Gets the property information object for the property in the given lambda expression.
-        /// </summary>
-        /// <typeparam name="TObject">The type of object that provides the property in the 
-        /// expression.</typeparam>
-        /// <typeparam name="TProperty">The type of the property in the expression.</typeparam>
-        /// <param name="expr">Lambda expression that defines the property of interest.</param>
-        /// <param name="paramName">Parameter name used when throwing exceptions.</param>
-        /// <returns>The property information object of the property specified in the lambda 
-        /// expression.</returns>
-        /// <exception cref="ArgumentException">Thrown if the lambda expression does not conform 
-        /// to an expression of a property of the <typeparamref name="TObject"/> data type.</exception>
-        private PropertyInfo GetPropertyInfo<TObject, TProperty>(Expression<Func<TObject, TProperty>> expr, string paramName)
-        {
-            MemberExpression member = expr.Body as MemberExpression;
-            Guard.ArgumentCondition(() => member != null, paramName, $"Expression '{expr}' refers to a method, not a property.");
-            PropertyInfo propInfo = member.Member as PropertyInfo;
-            Guard.ArgumentCondition(() => propInfo != null, paramName, $"Expression '{expr}' refers to a field, not a property.");
-            Type type = typeof(TObject);
-            Guard.ArgumentCondition(
-                () => type == propInfo.ReflectedType || type.IsSubclassOf(propInfo.ReflectedType),
-                paramName,
-                $"Expression '{expr}' refers to a property that is not from type {type}."
-            );
-            return propInfo;
-        }
-
-        /// <summary>
-        /// Maps a property in a target type to a property in the source type for comparison 
-        /// purposes.
+        /// Sets a new property map (or replaces any existing map) that defines the behavior of 
+        /// the comparison routine when comparing objects of type <typeparamref name="TSource"/> 
+        /// against objects of type <typeparamref name="TTarget"/>.
+        /// A map can be used to point a property in the source object to an arbitrarily-named 
+        /// property in the target object, or it can be used to ignore the property altogether 
+        /// so its value will not account for differences between de objects being compared.
         /// </summary>
         /// <typeparam name="TSourceProperty">The type of the source property.</typeparam>
         /// <typeparam name="TTargetProperty">The type of the target property.</typeparam>
@@ -132,8 +109,8 @@ namespace wj.ObjectComparer
             string targetFormatString = null
         )
         {
-            PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
-            PropertyInfo piTarget = GetPropertyInfo(targetPropExpr, nameof(targetPropExpr));
+            PropertyInfo piSource = ExpressionHelper.GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
+            PropertyInfo piTarget = ExpressionHelper.GetPropertyInfo(targetPropExpr, nameof(targetPropExpr));
             PropertyMap mapping = new PropertyMap(
                 Type2,
                 PropertyMapOperation.MapToProperty,
@@ -158,7 +135,7 @@ namespace wj.ObjectComparer
             Expression<Func<TSource, TSourceProperty>> sourcePropExpr
         )
         {
-            PropertyInfo piSource = GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
+            PropertyInfo piSource = ExpressionHelper.GetPropertyInfo(sourcePropExpr, nameof(sourcePropExpr));
             PropertyComparisonInfo pci = TypeInfo1.Properties[piSource.Name];
             //Ignore only for the specified data type.
             PropertyMap map = new PropertyMap(

@@ -160,6 +160,14 @@ namespace wj.ObjectComparer
         }
 
         /// <summary>
+        /// Gets the underlying (or base) type of a nullable type, or null if the type to test is 
+        /// not <see cref="Nullable{T}"/>.
+        /// </summary>
+        /// <param name="type">The type to test for a base type.</param>
+        /// <returns>The underlying, or base, type of the given type.</returns>
+        private Type GetNullableUnderlyingType(Type type) => Nullable.GetUnderlyingType(type);
+
+        /// <summary>
         /// Compares the property values of the first object against the property values of the 
         /// second object according to the preset property mapping rules between the two object 
         /// data types.
@@ -273,10 +281,13 @@ namespace wj.ObjectComparer
                         //Get the property value of the second object.
                         pci2 = _typeInfo2.Properties[prop2Name];
                         val2 = pci2.GetValue(object2);
+                        //Determine any base type to cover for T? vs T or vice versa.
+                        Type p1BaseType = GetNullableUnderlyingType(pci1.PropertyType) ?? pci1.PropertyType;
+                        Type p2BaseType = GetNullableUnderlyingType(pci2.PropertyType) ?? pci2.PropertyType;
                         //Determine the comparer to use.
                         IComparer comparer = null;
                         if ((mapToUse?.ForceStringValue ?? false) ||
-                            pci1.PropertyType != pci2.PropertyType)
+                            p1BaseType != p2BaseType)
                         {
                             comparer = ResolveComparerForType(typeof(string));
                             val1 = ConvertPropertyValueToString(val1, mapToUse?.FormatString);
@@ -285,7 +296,7 @@ namespace wj.ObjectComparer
                         }
                         else
                         {
-                            comparer = ResolveComparerForType(pci1.PropertyType);
+                            comparer = ResolveComparerForType(p1BaseType);
                         }
                         try
                         {
