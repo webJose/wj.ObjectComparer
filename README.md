@@ -1,4 +1,5 @@
-![WebJose's ObjectComparer](Logo_128.png)
+![webJose's ObjectComparer](Logo_128.png)
+
 # wj.ObjectComparer
 
 ## English
@@ -11,7 +12,7 @@ There are two major areas where such a comparer is useful:  Unit testing of obje
 
 ### How It Works
 
-The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using **fluent syntax configuration**.
+The most basic functionality is based on property names:  Properties in the different objects are matched to one another if their name matches.  Name matching is case sensitive.  However, this library allows custom property mapping either via the `PropertyMapAttribute` attribute or by using **fluent interface type or comparer configuration**.
 
 The actual property-by-property comparison is done using implementations of the `IComparer` interface.  Custom comparer objects for specific data types may also be provided, either directly to the `Scanner` class for global use, or directly to an object comparer object for local use.
 
@@ -392,7 +393,7 @@ ObjectComparer oc = ObjectComparer.Create<MyModel>();
 oc.Comparers.Add(typeof(DateTime), new MyComparer());
 ```
 
-For more information and advanced usage, refer to the wiki (coming soon).
+For more information and advanced usage, refer to the [wiki](wiki).
 
 ## Español
 
@@ -404,7 +405,7 @@ Existen dos áreas principales donde un comparador así es útil:  Pruebas unita
 
 ### Cómo Funciona
 
-La funcionalidad más básica se basa en nombres de propiedades:  Propiedades en los objetos son pareadas unas con otras si su nombre es igual.  El mapeo (pareo) es sensible a las mayúsculas.  Sin embargo esta biblioteca permite el mapeo personalizado a través del atributo `PropertyMapAttribute` o utilizando la **sintaxis fluida de configuración**.
+La funcionalidad más básica se basa en nombres de propiedades:  Propiedades en los objetos son pareadas unas con otras si su nombre es igual.  El mapeo (pareo) es sensible a las mayúsculas.  Sin embargo esta biblioteca permite el mapeo personalizado a través del atributo `PropertyMapAttribute` o utilizando la **interfaz fluida de configuración de tipo o de comparador**.
 
 La comparación propiedad por propiedad utiliza implementaciones de la interfaz `IComparer`.  También puede proveerse objetos comparadores personalizados para un tipo de datos, ya sea directamente a la clase `Scanner` para uso global, o bien directamente a un objeto compararador para uso local.
 
@@ -422,7 +423,7 @@ Esta biblioteca puede usarse en muchas situaciones.  Las siguientes subsecciones
 
 #### Caso A:  Comparación Simple
 
-**Premisas**
+**Premisas:**
 
 1. Los objetos a comparar son del mismo tipo, o son de tipos diferentes pero los nombres de propiedad corresponden exactamente.
 2. Los tipos de datos son conocidos.

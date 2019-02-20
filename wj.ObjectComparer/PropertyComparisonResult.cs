@@ -46,13 +46,21 @@ namespace wj.ObjectComparer
         /// </summary>
         StringCoercion = 0x1000,
         /// <summary>
-        /// The comparison operation resulted in an exception being thrown.
+        /// The comparison or string coercion operation resulted in an exception being thrown.
         /// </summary>
         Exception = 0x2000,
         /// <summary>
+        /// The string coercion operation resulted in an exception being thrown.
+        /// </summary>
+        StringCoercionException = Exception | 0x4000,
+        /// <summary>
+        /// The comparison operation resulted in an exception being thrown.
+        /// </summary>
+        ComparisonException = Exception | 0x8000,
+        /// <summary>
         /// The comparison operation could not use a comparer object.
         /// </summary>
-        NoComparer = 0x4000
+        NoComparer = 0x10000
     }
 
     /// <summary>

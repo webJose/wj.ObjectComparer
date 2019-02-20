@@ -145,7 +145,11 @@ namespace wj.ObjectComparer
             if (value == null) return null;
             if (String.IsNullOrWhiteSpace(formatString)) return value.ToString();
             IFormattable formattableValue = value as IFormattable;
-            return formattableValue?.ToString(formatString, null) ?? value.ToString();
+            if (formattableValue != null)
+            {
+                return formattableValue.ToString(formatString, null);
+            }
+            return value.ToString();
         }
 
         /// <summary>
@@ -212,7 +216,7 @@ namespace wj.ObjectComparer
                 object val1 = null;
                 object val2 = null;
                 PropertyComparisonInfo pci2 = null;
-                System.Exception comparisonException = null;
+                System.Exception catchedException = null;
                 //Ignore the property if no mapping exists and is being ignored for type 2, 
                 //or mapping exists and it states the property must be ignored.
                 bool propertyIgnored =
@@ -242,57 +246,68 @@ namespace wj.ObjectComparer
                             p1BaseType != p2BaseType)
                         {
                             comparer = ResolveComparerForType(typeof(string));
-                            val1 = ConvertPropertyValueToString(val1, mapToUse?.FormatString);
-                            val2 = ConvertPropertyValueToString(val2, mapToUse?.TargetFormatString);
+                            try
+                            {
+                                val1 = ConvertPropertyValueToString(val1, mapToUse?.FormatString);
+                                val2 = ConvertPropertyValueToString(val2, mapToUse?.TargetFormatString);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                result |= ComparisonResult.StringCoercionException;
+                                catchedException = ex;
+                            }
                             result |= ComparisonResult.StringCoercion;
                         }
                         else
                         {
                             comparer = ResolveComparerForType(p1BaseType);
                         }
-                        try
+                        if (catchedException == null)
                         {
-                            int comp = comparer.Compare(val1, val2);
-                            if (comp < 0)
-                            {
-                                result |= ComparisonResult.LessThan;
-                            }
-                            else if (comp > 0)
-                            {
-                                result |= ComparisonResult.GreaterThan;
-                            }
-                            else
-                            {
-                                result |= ComparisonResult.Equal;
-                            }
-                        }
-                        catch (System.ArgumentException)
-                        {
-                            //Property type does not implement IComparable and there is no comparer 
-                            //registered for the data type.
-                            result |= ComparisonResult.NoComparer;
-                            //So try to at least find out if it is equal or not.
                             try
                             {
-                                if (Object.Equals(val1, val2))
+                                int comp = comparer.Compare(val1, val2);
+                                if (comp < 0)
                                 {
-                                    result |= ComparisonResult.Equal;
+                                    result |= ComparisonResult.LessThan;
+                                }
+                                else if (comp > 0)
+                                {
+                                    result |= ComparisonResult.GreaterThan;
                                 }
                                 else
                                 {
-                                    result |= ComparisonResult.NotEqual;
+                                    result |= ComparisonResult.Equal;
+                                }
+                            }
+                            catch (System.ArgumentException)
+                            {
+                                //Property type does not implement IComparable and there is no comparer 
+                                //registered for the data type.
+                                result |= ComparisonResult.NoComparer;
+                                //So try to at least find out if it is equal or not.
+                                try
+                                {
+                                    if (Object.Equals(val1, val2))
+                                    {
+                                        result |= ComparisonResult.Equal;
+                                    }
+                                    else
+                                    {
+                                        result |= ComparisonResult.NotEqual;
+                                    }
+                                }
+                                catch (System.Exception ex)
+                                {
+                                    result |= ComparisonResult.ComparisonException;
+                                    catchedException = ex;
                                 }
                             }
                             catch (System.Exception ex)
                             {
-                                result |= ComparisonResult.Exception;
-                                comparisonException = ex;
+                                result |= ComparisonResult.ComparisonException;
+                                catchedException = ex;
                             }
-                        }
-                        catch (System.Exception ex)
-                        {
-                            result |= ComparisonResult.Exception;
-                            comparisonException = ex;
                         }
                     }
                     else
@@ -302,7 +317,7 @@ namespace wj.ObjectComparer
                     }
                 }
                 PropertyComparisonResult pcr = new PropertyComparisonResult(result, pci1, val1, pci2,
-                    val2, mapToUse, comparisonException);
+                    val2, mapToUse, catchedException);
                 results?.Add(pcr);
                 isDifferent = isDifferent || ((result & ComparisonResult.NotEqual) ==
                               ComparisonResult.NotEqual);

@@ -396,9 +396,28 @@ namespace wj.ObjectComparer.Tests
             //Assert.
             throwingComparer.VerifyAll();
             PropertyComparisonResult r = result[nameof(Person.Gender)];
-            r.Result.Should().Be(ComparisonResult.Exception);
+            r.Result.Should().Be(ComparisonResult.ComparisonException);
             r.Exception.Should().NotBeNull();
-            r.Exception.Should().BeOfType<InvalidOperationException>();
+        }
+
+        [Test]
+        [Description("Makes sure exceptions are caught if string coercion throws any.")]
+        public void StringCoercionThrows()
+        {
+            //Arrange.
+            Person p1 = ModelsHelper.CreatePerson();
+            Person p2 = ModelsHelper.CreatePerson();
+            ObjectComparer comparer = ComparerConfigurator.Configure<Person>()
+                .MapProperty(src => src.Gender, dst => dst.Gender, true, "ABC", "DEF")
+                .CreateComparer();
+
+            //Act.
+            var result = comparer.Compare(p1, p2, out bool _);
+
+            //Assert.
+            PropertyComparisonResult r = result[nameof(Person.Gender)];
+            (r.Result & ComparisonResult.StringCoercionException).Should().Be(ComparisonResult.StringCoercionException);
+            r.Exception.Should().NotBeNull();
         }
 
         [Test]
