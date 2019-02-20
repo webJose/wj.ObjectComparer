@@ -1,3 +1,4 @@
+![WebJose's ObjectComparer](Logo_128.png)
 # wj.ObjectComparer
 
 ## English
