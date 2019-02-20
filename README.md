@@ -393,7 +393,7 @@ ObjectComparer oc = ObjectComparer.Create<MyModel>();
 oc.Comparers.Add(typeof(DateTime), new MyComparer());
 ```
 
-For more information and advanced usage, refer to the [wiki](wiki).
+For more information and advanced usage, refer to the [wiki](../../wiki).
 
 ## Español
 
