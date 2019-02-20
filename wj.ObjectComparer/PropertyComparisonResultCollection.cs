@@ -1,10 +1,12 @@
-﻿namespace wj.ObjectComparer
+﻿using System.Collections.ObjectModel;
+
+namespace wj.ObjectComparer
 {
     /// <summary>
     /// Collection of <see cref="PropertyComparisonResult"/> objects product of a comparison 
     /// operation between two objects.
     /// </summary>
-    public class PropertyComparisonResultCollection : DictionaryCollection<string, PropertyComparisonResult>
+    public class PropertyComparisonResultCollection : KeyedCollection<string, PropertyComparisonResult>
     {
         #region Methods
         /// <inheritdoc />
@@ -12,6 +14,15 @@
         {
             return item.Property1.Name;
         }
+        #endregion
+
+        #region Constructors
+        /// <summary>
+        /// Creates a new instance of this class.
+        /// </summary>
+        public PropertyComparisonResultCollection()
+            : base(null, 20)
+        { }
         #endregion
     }
 }

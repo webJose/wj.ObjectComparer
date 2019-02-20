@@ -77,6 +77,9 @@ namespace wj.ObjectComparer
         /// value to string.</param>
         /// <param name="targetFormatString">The format string to use to convert the destination 
         /// property value to string.</param>
+        /// <exception cref="ArgumentNullException">Thrown if a type is not provided.</exception>
+        /// <exception cref="ArgumentException">Thrown if a valid property map operation value is 
+        /// not provided or if a target property name is not given.</exception>
         public PropertyMap(Type targetType, PropertyMapOperation operation, string targetProperty = null, bool forceStringValue = false, string formatString = null, string targetFormatString = null)
         {
             Guard.RequiredArgument(targetType, nameof(targetType));

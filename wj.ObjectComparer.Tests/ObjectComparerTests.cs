@@ -191,7 +191,7 @@ namespace wj.ObjectComparer.Tests
             isDifferent.Should().BeFalse();
             result.Should().NotBeNull();
             result.Count.Should().Be(5);
-            foreach (PropertyComparisonResult pcr in result.Values)
+            foreach (PropertyComparisonResult pcr in result)
             {
                 pcr.Result.Should().Be(ComparisonResult.Equal);
             }

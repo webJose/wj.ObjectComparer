@@ -174,27 +174,7 @@ namespace wj.ObjectComparer
         /// </summary>
         /// <param name="object1">The first object to be compared against a second object.</param>
         /// <param name="object2">The second object of the comparison operation.</param>
-        /// <param name="results">If provided, it will be used to collec the comparison results.</param>
-        /// <returns>A collection of <see cref="PropertyComparisonResult"/> objects that detail 
-        /// how the values of two properties in two different objects compare to one another.  If 
-        /// a collection was provided in the <paramref name="results"/> parameter, the returned 
-        /// collection is the collection that was provided through the aforementioned parameter.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
-        /// data type.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
-        /// object.</exception>
-        public IDictionary<string, PropertyComparisonResult> Compare(object object1, object object2,
-            IDictionary<string, PropertyComparisonResult> results = null) =>
-            Compare(object1, object2, out var _, results);
-
-        /// <summary>
-        /// Compares the property values of the first object against the property values of the 
-        /// second object according to the preset property mapping rules between the two object 
-        /// data types.
-        /// </summary>
-        /// <param name="object1">The first object to be compared against a second object.</param>
-        /// <param name="object2">The second object of the comparison operation.</param>
+        /// <param name="results">If provided, it will be used to collect the comparison results.</param>
         /// <returns>A Boolean value with the summarized result of the comparison.  True if any 
         /// property values were deemed different; false if all property values turned out equal.</returns>
         /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
@@ -202,34 +182,7 @@ namespace wj.ObjectComparer
         /// data type.</exception>
         /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
         /// object.</exception>
-        public bool Compare(object object1, object object2)
-        {
-            Compare(object1, object2, out bool isDifferent);
-            return isDifferent;
-        }
-
-        /// <summary>
-        /// Compares the property values of the first object against the property values of the 
-        /// second object according to the preset property mapping rules between the two object 
-        /// data types.
-        /// </summary>
-        /// <param name="object1">The first object to be compared against a second object.</param>
-        /// <param name="object2">The second object of the comparison operation.</param>
-        /// <param name="isDifferent">A Boolean out parameter that contains an overall result of 
-        /// the comparison:  It will be true if there is any difference in any of the property 
-        /// values; false if all property values turn out to be equal.</param>
-        /// <param name="results">If provided, it will be used to collec the comparison results.</param>
-        /// <returns>A collection of <see cref="PropertyComparisonResult"/> objects that detail 
-        /// how the values of two properties in two different objects compare to one another.  If 
-        /// a collection was provided in the <paramref name="results"/> parameter, the returned 
-        /// collection is the collection that was provided through the aforementioned parameter.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
-        /// data type.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
-        /// object.</exception>
-        public IDictionary<string, PropertyComparisonResult> Compare(object object1, object object2, out bool isDifferent,
-            IDictionary<string, PropertyComparisonResult> results = null)
+        public bool Compare(object object1, object object2, ICollection<PropertyComparisonResult> results = null)
         {
             #region Argument Validation
             Guard.RequiredArgument(object1, nameof(object1));
@@ -245,8 +198,7 @@ namespace wj.ObjectComparer
             Guard.Condition(() => !Object.ReferenceEquals(object1, object2), "The objects to compare must be different.");
             #endregion
 
-            if (results == null) results = new PropertyComparisonResultCollection();
-            isDifferent = false;
+            bool isDifferent = false;
             foreach (PropertyComparisonInfo pci1 in _typeInfo1.Properties)
             {
                 ComparisonResult result = ComparisonResult.Undefined;
@@ -263,7 +215,7 @@ namespace wj.ObjectComparer
                 System.Exception comparisonException = null;
                 //Ignore the property if no mapping exists and is being ignored for type 2, 
                 //or mapping exists and it states the property must be ignored.
-                bool propertyIgnored = 
+                bool propertyIgnored =
                     ((pci1.IgnoreProperty & IgnorePropertyOptions.IgnoreForSelf) == IgnorePropertyOptions.IgnoreForSelf && Type1 == Type2) ||
                     ((pci1.IgnoreProperty & IgnorePropertyOptions.IgnoreForOthers) == IgnorePropertyOptions.IgnoreForOthers && Type1 != Type2);
                 if ((mapToUse == null && propertyIgnored)
@@ -351,10 +303,34 @@ namespace wj.ObjectComparer
                 }
                 PropertyComparisonResult pcr = new PropertyComparisonResult(result, pci1, val1, pci2,
                     val2, mapToUse, comparisonException);
-                results.Add(null, pcr);
+                results?.Add(pcr);
                 isDifferent = isDifferent || ((result & ComparisonResult.NotEqual) ==
                               ComparisonResult.NotEqual);
             }
+            return isDifferent;
+        }
+
+        /// <summary>
+        /// Compares the property values of the first object against the property values of the 
+        /// second object according to the preset property mapping rules between the two object 
+        /// data types.
+        /// </summary>
+        /// <param name="object1">The first object to be compared against a second object.</param>
+        /// <param name="object2">The second object of the comparison operation.</param>
+        /// <param name="isDifferent">A Boolean out parameter that contains an overall result of 
+        /// the comparison:  It will be true if there is any difference in any of the property 
+        /// values; false if all property values turn out to be equal.</param>
+        /// <returns>A collection of <see cref="PropertyComparisonResult"/> objects that detail 
+        /// how the values of two properties in two different objects compare to one another.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if either object is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if either object is not of the expected 
+        /// data type.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if both objects are really the same 
+        /// object.</exception>
+        public PropertyComparisonResultCollection Compare(object object1, object object2, out bool isDifferent)
+        {
+            PropertyComparisonResultCollection results = new PropertyComparisonResultCollection();
+            isDifferent = Compare(object1, object2, results);
             return results;
         }
         #endregion
