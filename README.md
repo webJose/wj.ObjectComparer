@@ -784,4 +784,4 @@ ObjectComparer oc = ObjectComparer.Create<MyModel>();
 oc.Comparers.Add(typeof(DateTime), new MyComparer());
 ```
 
-Para más información y usos avanzados, refereirse al Wiki (pronto).
+Para más información y usos avanzados, refereirse al [wiki](../../wiki/Home-es).
