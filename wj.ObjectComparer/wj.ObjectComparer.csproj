@@ -11,9 +11,9 @@
     <PackageTags>compare comparer objectcomparer property comparison</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>1.0.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
     <PackageReleaseNotes>Version 1.0.0 is the first production grade version.</PackageReleaseNotes>
     <PackageIconUrl>https://github.com/webJose/wj.ObjectComparer/blob/master/Logo_1024.png</PackageIconUrl>
   </PropertyGroup>

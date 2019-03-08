@@ -62,7 +62,7 @@ namespace wj.ObjectComparer
         /// <returns>This target type configuration object to enable fluent syntax.</returns>
         public TargetTypeConfiguration<TSource, TTarget> MapProperty<TSourceProperty, TTargetProperty>(
             Expression<Func<TSource, TSourceProperty>> sourcePropExpr,
-            Expression<Func<TSource, TTargetProperty>> targetPropExpr,
+            Expression<Func<TTarget, TTargetProperty>> targetPropExpr,
             bool forceStringValue = false,
             string formatString = null,
             string targetFormatString = null
