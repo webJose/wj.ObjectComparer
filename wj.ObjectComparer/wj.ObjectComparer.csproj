@@ -16,7 +16,15 @@
     <FileVersion>1.0.1</FileVersion>
     <PackageReleaseNotes>Version 1.0.0 is the first production grade version.</PackageReleaseNotes>
     <PackageIconUrl>https://github.com/webJose/wj.ObjectComparer/blob/master/Logo_1024.png</PackageIconUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
